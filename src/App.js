@@ -1,23 +1,44 @@
-import logo from './logo.svg';
-import './App.css';
+import Header from "./components/Header/Header.js";
+import Home from "./components/Sections/Home.js";
+import Destinations from "./components/Sections/Destinations.js";
+import SafetyTips from "./components/Sections/SafetyTips.js";
+import AboutUs from "./components/Sections/AboutUs.js";
+import "./App.css";
+import AuthForm from "./components/Registration/AuthForm.js";
+
+import { BrowserRouter as Router, Route, Routes } from "react-router-dom";
 
 function App() {
   return (
     <div className="App">
-      <header className="App-header">
-        <img src={logo} className="App-logo" alt="logo" />
-        <p>
-          Edit <code>src/App.js</code> and save to reload.
-        </p>
-        <a
-          className="App-link"
-          href="https://reactjs.org"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          Learn React
-        </a>
-      </header>
+      <Header />
+
+      <main>
+        <Routes>
+          {/* Home Route - Wrap all sections inside */}
+          <Route
+            path="/"
+            element={
+              <>
+                <section id="home">
+                  <Home />
+                </section>
+                <section id="destinations">
+                  <Destinations />
+                </section>
+                <section id="safety">
+                  <SafetyTips />
+                </section>
+                <section id="about">
+                  <AboutUs />
+                </section>
+              </>
+            }
+          />
+
+          <Route path="/login" element={<AuthForm />} />
+        </Routes>
+      </main>
     </div>
   );
 }

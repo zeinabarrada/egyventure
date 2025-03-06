@@ -1,0 +1,19 @@
+.navigation {
+  display: flex;
+  gap: 2rem; /* Adds spacing between links */
+  list-style: none;
+  margin: 0;
+  padding: 0;
+}
+
+.navigation li {
+  cursor: pointer;
+  font-weight: 500;
+  transition: color 0.3s ease;
+  font-size: larger;
+  text-decoration: none;
+}
+
+.navigation li:hover {
+  color: #8f5725;
+}
