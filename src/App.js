@@ -7,6 +7,7 @@ import "./App.css";
 import AuthForm from "./components/Registration/AuthForm.js";
 
 import { BrowserRouter as Router, Route, Routes } from "react-router-dom";
+import ChooseInterests from "./components/ChooseInterests.js";
 
 function App() {
   return (
@@ -37,6 +38,7 @@ function App() {
           />
 
           <Route path="/login" element={<AuthForm />} />
+          <Route path="/chooseinterests" element={<ChooseInterests />} />
         </Routes>
       </main>
     </div>

@@ -1,0 +1,100 @@
+/* General page styling */
+body {
+  font-family: Arial, sans-serif;
+  background-color: #f7f7f7;
+  margin: 0;
+  padding: 0;
+}
+
+/* Heading */
+h2 {
+  text-align: center;
+  font-size: 36px;
+  font-weight: bold;
+  color: #604d4d;
+  margin: 30px auto 5px;
+  padding: 90px 0; /* Adjusted padding */
+  width: 100%;
+  z-index: 10;
+}
+
+/* Interests container */
+.interests-container {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr); /* 4 per row */
+  gap: 15px;
+  justify-content: center;
+  max-width: 900px;
+  margin: 10px auto;
+  padding: 9px;
+}
+
+/* Styling for each button */
+button {
+  background-color: #fff;
+  border: 2px solid #ddd;
+  border-radius: 25px;
+  color: #333;
+  padding: 10px 10px;
+  font-size: 20px;
+  cursor: pointer;
+  text-align: center;
+  transition: background-color 0.3s ease, color 0.3s ease;
+  box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+}
+
+.submit-container {
+  display: flex;
+  justify-content: center;
+  margin-top: 20px; /* Adds spacing */
+}
+
+button.submit-btn {
+  padding: 12px 24px;
+  font-size: 18px;
+  background-color: #8f5725;
+  color: white;
+  border: none;
+  border-radius: 25px;
+  cursor: pointer;
+  transition: all 0.3s ease-in-out;
+}
+
+button.submit-btn:hover {
+  background-color: #965c2d;
+  transform: scale(1.05);
+}
+
+/* Selected button styling */
+button.selected {
+  background-color: #8f5725;
+  color: white;
+  border-color: #965c2d;
+}
+
+/* Responsive Design */
+@media (max-width: 900px) {
+  .interests-container {
+    grid-template-columns: repeat(3, 1fr); /* 3 buttons per row */
+  }
+}
+p {
+  text-align: center;
+  padding: 10px;
+}
+.heading-container {
+  text-align: center;
+  margin-bottom: 20px; /* Space before buttons */
+}
+
+@media (max-width: 600px) {
+  .interests-container {
+    grid-template-columns: repeat(2, 1fr); /* 2 per row */
+  }
+}
+
+@media (max-width: 400px) {
+  .interests-container {
+    grid-template-columns: repeat(1, 1fr); /* 1 per row */
+  }
+}

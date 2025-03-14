@@ -1,8 +1,11 @@
 import { useState } from "react";
+import { useNavigate } from "react-router-dom";
+
 import "./Registeration.css";
 import sideImage from "./sidepicc.jpeg"; // Replace with your image path
 
 function AuthForm() {
+  const navigate = useNavigate();
   const [isLogin, setIsLogin] = useState(true);
   const [formData, setFormData] = useState({
     firstName: "",
@@ -24,6 +27,8 @@ function AuthForm() {
       alert("Passwords do not match!");
       return;
     }
+    if (isLogin) navigate("/homepage");
+    else navigate("/chooseinterests");
     console.log(`${isLogin ? "Login" : "Register"} Attempt:`, formData);
   };
 
