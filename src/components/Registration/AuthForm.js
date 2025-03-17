@@ -1,6 +1,6 @@
 import { useState } from "react";
 import { useNavigate } from "react-router-dom";
-
+import axios from "axios";
 import "./Registeration.css";
 import sideImage from "./sidepicc.jpeg"; // Replace with your image path
 
@@ -21,14 +21,35 @@ function AuthForm() {
     setFormData({ ...formData, [e.target.name]: e.target.value });
   };
 
-  const handleSubmit = (e) => {
+  const handleSubmit = async (e) => {
     e.preventDefault();
     if (!isLogin && formData.password !== formData.confirmPassword) {
       alert("Passwords do not match!");
       return;
     }
-    if (isLogin) navigate("/homepage");
-    else navigate("/chooseinterests");
+    try {
+      if (isLogin) {
+        const response = await axios.get("/login", {
+          email: formData.email,
+          password: formData.password,
+        });
+        if (response.data.success) {
+          navigate("/homepage");
+        } else {
+          alert("Login failed:" + response.data.message);
+        }
+      } else {
+        const response = await axios.get("/signup", formData);
+        if (response.data.success) {
+          navigate("/chooseinterests");
+        } else {
+          alert("Sign up failed:" + response.data.message);
+        }
+      }
+    } catch (error) {
+      console.error("Error: ", error);
+      alert("An error occurred. Please try again");
+    }
     console.log(`${isLogin ? "Login" : "Register"} Attempt:`, formData);
   };
 
