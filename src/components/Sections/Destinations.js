@@ -1,71 +1,30 @@
-import React, { useState } from "react";
 import "./Sections.css";
 
 function Destinations() {
-  const destinations = [
-    { name: "Giza", image: "/giza.jpg" },
-    { name: "Alexandria", image: "/alex.jpg" },
-    { name: "Siwa", image: "/siwa.jpg" },
-    { name: "Dahab", image: "/dahab.jpg" },
-    { name: "Luxor", image: "/luxor.jpg" },
-    { name: "Aswan", image: "/aswan.jpg" },
-  ];
-
-  const [currentIndex, setCurrentIndex] = useState(0);
-
-  const moveCarousel = (direction) => {
-    if (direction === "left") {
-      setCurrentIndex((prev) =>
-        prev === 0 ? destinations.length - 1 : prev - 1
-      );
-    } else {
-      setCurrentIndex((prev) =>
-        prev === destinations.length - 1 ? 0 : prev + 1
-      );
-    }
-  };
-
   return (
-    <section className="destinations-section">
-      <h1 className="section-title">Explore Destinations</h1>
-      <div className="carousel-container">
-        <button
-          className="nav-btn prev-btn"
-          onClick={() => moveCarousel("left")}
-        >
-          ‹
-        </button>
+    <div className="container mt-5 destinations-section">
+      <h2 className="text-center section-title">Places not to be missed</h2>
 
-        <div className="carousel-track">
-          {destinations.map((destination, index) => (
-            <div
-              key={destination.name}
-              className="carousel-item"
-              style={{
-                transform: `translateX(${-currentIndex * 100}%)`,
-                transition: "transform 0.5s ease",
-              }}
-            >
-              <div className="image-container">
-                <img
-                  src={destination.image}
-                  alt={destination.name}
-                  className="destination-image"
-                />
-              </div>
-              <h3 className="destination-name">{destination.name}</h3>
-            </div>
-          ))}
+      <div className="row g-2 pictures justify-content-center">
+        <div className="col-md-3  d-flex flex-column gap-2 ">
+          <img
+            src="/khan-el-khalili.jpeg"
+            className="img-fluid rounded"
+            alt="Khan El Khalili"
+          />
+          <img src="/alex.jpg" className="img-fluid rounded" alt="Alex" />
         </div>
+        <div className="col-md-3 d-flex flex-column gap-2">
+          <img src="/luxor.jpg" className="img-fluid rounded" alt="Luxor" />
+          <img src="/aswan.jpg" className="img-fluid rounded" alt="Aswan" />
+        </div>
+        <div className="col-md-3 d-flex flex-column gap-2">
+          <img src="/dahab.jpg" className="img-fluid rounded" alt="Dahab" />
 
-        <button
-          className="nav-btn next-btn"
-          onClick={() => moveCarousel("right")}
-        >
-          ›
-        </button>
+          <img src="/giza.jpg" className="img-fluid rounded" alt="Giza" />
+        </div>
       </div>
-    </section>
+    </div>
   );
 }
 
