@@ -5,10 +5,10 @@
 section {
   min-height: 100vh; /* Each section takes at least the full height of the viewport */
   /* Optional: Add padding for spacing */
-  box-sizing: border-box; /* Ensure padding is included in the height calculation */
+  /* Ensure padding is included in the height calculation */
 }
 body {
-  min-width: 1200px; /* Set your desired minimum width */
+  min-width: 100vw; /* Set your desired minimum width */
   margin: 0;
   padding: 0;
   overflow-x: hidden; /* Hide horizontal scrollbar */
