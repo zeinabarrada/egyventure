@@ -1,28 +1,23 @@
 from django.shortcuts import render
 from django.http import JsonResponse
 from django.views.decorators.csrf import csrf_exempt
-import logging
 from pymongo import MongoClient
 
-logger = logging.getLogger(__name__)
+
 client = MongoClient('mongodb://localhost:27017/')
 db = client['db']
 users_db = db['users']
 
 @csrf_exempt
-def create_user(request):
+def signup(request):
     if request.method == 'POST':
         try:        
-            logger.info(f'Incoming request data: {request.POST}')
-            
             fname = request.POST['fname']
             lname = request.POST['lname']
             username = request.POST['username']
             gender = request.POST['gender']
             email = request.POST['email']
             password = request.POST['password']
-            
-            logger.info(f'Extracted data: fname={fname}, lname={lname}, username={username}, gender={gender}, email={email}, password={password}')
             
             user_document = {
                 'fname': fname,
@@ -40,12 +35,35 @@ def create_user(request):
             else:
                 return JsonResponse({'error': 'Failed to create user.'}, status=500)
 
-        except KeyError as e:
-            logger.error(f'Missing field: {str(e)}')
+        except KeyError as e:            
             return JsonResponse({'error': f'Missing field: {str(e)}'}, status=400)
-        except Exception as e:
-            logger.error(f'Unexpected error: {str(e)}')
+        except Exception as e:            
             return JsonResponse({'error': 'An unexpected error occurred. Please try again later.'}, status=500)
     else:
         # Render the form template for GET requests
         return render(request, 'signup.html')
+
+
+@csrf_exempt
+def login(request):
+    if request.method == 'POST':
+        try:            
+            username = request.POST['username']
+            password = request.POST['password']
+            
+            user = users_db.find_one({'username': username})
+
+            if user:                
+                if  password == user['password']:
+                    return JsonResponse({'message': 'Login successful!', 'user': str(user['_id'])}, status=200)
+                else:
+                    return JsonResponse({'error': 'Invalid username or password.'}, status=401)
+            else:
+                return JsonResponse({'error': 'User not found.'}, status=404)
+
+        except KeyError as e:
+            return JsonResponse({'error': f'Missing field: {str(e)}'}, status=400)
+        except Exception as e:
+            return JsonResponse({'error': f'An error occurred: {str(e)}'}, status=500)
+    else:        
+        return render(request, 'login.html')
