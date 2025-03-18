@@ -17,10 +17,8 @@ export default function ChooseInterests() {
     "Outdoors",
   ];
 
-  // ✅ Fix 1: Initialize selectedInterests as an empty array
   const [selectedInterests, setSelectedInterests] = useState([]);
 
-  // ✅ Fix 2: Proper function definition
   const toggleInterest = (interest) => {
     setSelectedInterests(
       (prev) =>
@@ -30,7 +28,6 @@ export default function ChooseInterests() {
     );
   };
 
-  // ✅ Fix 3: Add a return statement for rendering
   return (
     <div>
       <div className="heading-container">
