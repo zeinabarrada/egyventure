@@ -13,9 +13,9 @@ attractions_db = db['attractions']
 @csrf_exempt
 def signup(request):
     if request.method == 'POST':
-        try:        
-            fname = request.POST['fname']
-            lname = request.POST['lname']
+        try:            
+            fname = request.POST['firstName']
+            lname = request.POST['lastName']
             username = request.POST['username']
             gender = request.POST['gender']
             email = request.POST['email']
