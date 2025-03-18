@@ -2,7 +2,8 @@ import { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import axios from "axios";
 import "./Registeration.css";
-import sideImage from "./sidepicc.jpeg"; // Replace with your image path
+import sideImage from "./sidepicc.jpeg";
+import api from "../api"; // Replace with your image path
 
 function AuthForm() {
   const navigate = useNavigate();
@@ -23,13 +24,14 @@ function AuthForm() {
 
   const handleSubmit = async (e) => {
     e.preventDefault();
+    console.log("Sending data:", formData);
     if (!isLogin && formData.password !== formData.confirmPassword) {
       alert("Passwords do not match!");
       return;
     }
     try {
       if (isLogin) {
-        const response = await axios.get("/login", {
+        const response = await axios.post("http://127.0.0.1:8000/login", {
           email: formData.email,
           password: formData.password,
         });
@@ -39,7 +41,14 @@ function AuthForm() {
           alert("Login failed:" + response.data.message);
         }
       } else {
-        const response = await axios.get("/signup", formData);
+        const response = await axios.post("http://127.0.0.1:8000/signup", {
+          firstName: formData.firstName,
+          lastName: formData.lastName,
+          username: formData.username,
+          gender: formData.gender,
+          email: formData.email,
+          password: formData.password,
+        });
         if (response.data.success) {
           navigate("/chooseinterests");
         } else {
@@ -47,7 +56,7 @@ function AuthForm() {
         }
       }
     } catch (error) {
-      console.error("Error: ", error);
+      console.error("Error: ", error.response.data);
       alert("An error occurred. Please try again");
     }
     console.log(`${isLogin ? "Login" : "Register"} Attempt:`, formData);

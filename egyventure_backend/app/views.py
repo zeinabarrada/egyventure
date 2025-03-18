@@ -13,13 +13,14 @@ attractions_db = db['attractions']
 @csrf_exempt
 def signup(request):
     if request.method == 'POST':
-        try:            
-            fname = request.POST['firstName']
-            lname = request.POST['lastName']
-            username = request.POST['username']
-            gender = request.POST['gender']
-            email = request.POST['email']
-            password = request.POST['password']
+        try:  
+            data = json.loads(request.body)          
+            fname = data['firstName']
+            lname = data['lastName']
+            username = data['username']
+            gender = data['gender']
+            email = data['email']
+            password = data['password']
             
             user_document = {
                 'fname': fname,
@@ -33,7 +34,7 @@ def signup(request):
             result = users_db.insert_one(user_document)
             
             if result.inserted_id:
-                return JsonResponse({'message': 'User created successfully!', 'id': str(result.inserted_id)}, status=201)
+                return JsonResponse({'success':True,'message': 'User created successfully!', 'id': str(result.inserted_id)}, status=201)
             else:
                 return JsonResponse({'error': 'Failed to create user.'}, status=500)
 
@@ -50,14 +51,15 @@ def signup(request):
 def login(request):
     if request.method == 'POST':
         try:            
-            username = request.POST['username']
-            password = request.POST['password']
+            data = json.loads(request.body)  
+            email = data['email']
+            password = data['password']
             
-            user = users_db.find_one({'username': username})
+            user = users_db.find_one({'email': email})
 
             if user:                
                 if  password == user['password']:
-                    return JsonResponse({'message': 'Login successful!', 'user': str(user['_id'])}, status=200)
+                    return JsonResponse({'success':True,'message': 'Login successful!', 'user': str(user['_id'])}, status=200)
                 else:
                     return JsonResponse({'error': 'Invalid username or password.'}, status=401)
             else:
