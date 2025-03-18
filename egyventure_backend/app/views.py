@@ -2,6 +2,8 @@ from django.shortcuts import render
 from django.http import JsonResponse
 from django.views.decorators.csrf import csrf_exempt
 from pymongo import MongoClient
+from bson import ObjectId
+import json
 
 client = MongoClient('mongodb://localhost:27017/')
 db = client['db']
@@ -78,3 +80,34 @@ def get_attractions(request):
 
     # Return the documents in a JsonResponse
     return JsonResponse({'status': 'success', 'attractions': attractions}, safe=False)
+
+
+@csrf_exempt
+def get_attraction(request):
+    if request.method == 'POST':
+        try:            
+            data = json.loads(request.body)
+            attraction_id = data.get('id')
+
+            if not attraction_id:
+                return JsonResponse({'status': 'error', 'message': 'Attraction ID is required.'}, status=400)
+
+            # Convert the ID to ObjectId
+            attraction_id = ObjectId(attraction_id)
+
+            # Find the attraction by its ID
+            attraction = attractions_db.find_one({'_id': attraction_id})
+
+            if not attraction:
+                return JsonResponse({'status': 'error', 'message': 'Attraction not found.'}, status=404)
+
+            # Convert ObjectId to string
+            attraction['_id'] = str(attraction['_id'])
+
+            # Return the attraction in a JsonResponse
+            return JsonResponse({'status': 'success', 'attraction': attraction}, safe=False)
+
+        except Exception as e:
+            return JsonResponse({'status': 'error', 'message': str(e)}, status=500)
+    else:        
+        return render(request, 'get_attraction.html')
