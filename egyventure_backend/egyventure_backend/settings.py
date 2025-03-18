@@ -56,11 +56,7 @@ ROOT_URLCONF = 'egyventure_backend.urls'
 TEMPLATES = [
     {
         'BACKEND': 'django.template.backends.django.DjangoTemplates',
-        'DIRS': [
-            BASE_DIR / 'templates', 
-            BASE_DIR / 'templates/src',
-            BASE_DIR / 'templates/public',
-            ],
+        'DIRS': [BASE_DIR / 'templates'],
         'APP_DIRS': True,
         'OPTIONS': {
             'context_processors': [
@@ -81,8 +77,14 @@ WSGI_APPLICATION = 'egyventure_backend.wsgi.application'
 
 DATABASES = {
     'default': {
-        'ENGINE': 'django.db.backends.sqlite3',
-        'NAME': BASE_DIR / 'db.sqlite3',
+        'ENGINE': 'djongo',
+        'NAME': 'db',
+        'CLIENT': {
+            'host': 'mongodb://localhost:27017',
+        },
+        'OPTIONS': {
+            'DISABLE_SERVER_SIDE_CURSORS': True,  # Disable schema validation
+        }
     }
 }
 
