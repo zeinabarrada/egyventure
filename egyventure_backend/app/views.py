@@ -3,10 +3,10 @@ from django.http import JsonResponse
 from django.views.decorators.csrf import csrf_exempt
 from pymongo import MongoClient
 
-
 client = MongoClient('mongodb://localhost:27017/')
 db = client['db']
 users_db = db['users']
+attractions_db = db['attractions']
 
 @csrf_exempt
 def signup(request):
@@ -67,3 +67,14 @@ def login(request):
             return JsonResponse({'error': f'An error occurred: {str(e)}'}, status=500)
     else:        
         return render(request, 'login.html')
+
+@csrf_exempt
+def get_attractions(request):
+    attractions = list(attractions_db.find({}))
+
+    # Convert ObjectId to string in each document
+    for doc in attractions:
+        doc['_id'] = str(doc['_id'])
+
+    # Return the documents in a JsonResponse
+    return JsonResponse({'status': 'success', 'attractions': attractions}, safe=False)
