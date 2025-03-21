@@ -44,9 +44,6 @@ def signup(request):
             return JsonResponse({'error': f'Missing field: {str(e)}'}, status=400)
         except Exception as e:            
             return JsonResponse({'error': 'An unexpected error occurred. Please try again later.'}, status=500)
-    else:
-        # Render the form template for GET requests
-        return render(request, 'signup.html')
 
 
 @csrf_exempt
@@ -77,8 +74,6 @@ def login(request):
             return JsonResponse({'error': f'Missing field: {str(e)}'}, status=400)
         except Exception as e:
             return JsonResponse({'error': f'An error occurred: {str(e)}'}, status=500)
-    else:        
-        return render(request, 'login.html')
 
 
 @csrf_exempt
