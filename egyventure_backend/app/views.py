@@ -58,10 +58,11 @@ def login(request):
             password = data['password']
             
             user = users_db.find_one({'email': email})
+            fname = user['fname']
 
             if user:                
                 if  password == user['password']:
-                    return JsonResponse({'success':True,'message': 'Login successful!', 'user': str(user['_id'])}, status=200)
+                    return JsonResponse({'success':True,'message': 'Login successful!', 'user_id': str(user['_id']), 'firstname':str(fname)}, status=200)
                 else:
                     return JsonResponse({'error': 'Invalid username or password.'}, status=401)
             else:
