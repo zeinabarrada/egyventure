@@ -24,19 +24,24 @@ def signup(request):
             email = data['email']
             password = data['password']
             
-            user_document = {
+            user = {
                 'fname': fname,
                 'lname': lname,
                 'username': username,
                 'gender': gender,
                 'email': email,
-                'password': password  # Note: In a real application, hash the password before storing it
+                'password': password  # hash the password before storing it
             }
         
-            result = users_db.insert_one(user_document)
+            result = users_db.insert_one(user)
             
             if result.inserted_id:
-                return JsonResponse({'success':True,'message': 'User created successfully!', 'id': str(result.inserted_id)}, status=201)
+                return JsonResponse(
+                    {
+                    'success':True,'message': 'User created successfully!', 
+                    'id': str(result.inserted_id),
+                    'name': str(fname),
+                    }, status=201)
             else:
                 return JsonResponse({'error': 'Failed to create user.'}, status=500)
 
@@ -59,12 +64,13 @@ def login(request):
 
             if user:                
                 if  password == user['password']:
-                    return JsonResponse({
+                    return JsonResponse(
+                        {
                         'success':True,
                         'message': 'Login successful!',
                         'user_id': str(user['_id']), 
-                        'first_name': str(user['fname'])}, 
-                        status=200)
+                        'first_name': str(user['fname'])
+                        }, status=200)
                 else:
                     return JsonResponse({'error': 'Invalid username or password.'}, status=401)
             else:
