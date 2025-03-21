@@ -5,10 +5,12 @@ from pymongo import MongoClient
 from bson import ObjectId
 import json
 
+
 client = MongoClient('mongodb://localhost:27017/')
 db = client['db']
 users_db = db['users']
 attractions_db = db['attractions']
+
 
 @csrf_exempt
 def signup(request):
@@ -72,6 +74,7 @@ def login(request):
     else:        
         return render(request, 'login.html')
 
+
 @csrf_exempt
 def get_attractions(request):
     attractions = list(attractions_db.find({}))
@@ -113,3 +116,32 @@ def get_attraction(request):
             return JsonResponse({'status': 'error', 'message': str(e)}, status=500)
     else:        
         return render(request, 'get_attraction.html')
+
+
+@csrf_exempt
+def get_user(request):
+    if request.method == 'GET':
+        try:            
+            data = json.loads(request.body)
+            user_id = data.get('id')
+
+            if not user_id:
+                return JsonResponse({'status': 'error', 'message': 'User ID is required.'}, status=400)
+
+            # Convert the ID to ObjectId
+            user_id = ObjectId(user_id)
+
+            # Find the attraction by its ID
+            user = users_db.find_one({'_id': user_id})
+
+            if not user:
+                return JsonResponse({'status': 'error', 'message': 'User not found.'}, status=404)
+
+            # Convert ObjectId to string
+            user['_id'] = str(user['_id'])
+
+            # Return the attraction in a JsonResponse
+            return JsonResponse({'status': 'success', 'user': user}, safe=False)
+
+        except Exception as e:
+            return JsonResponse({'status': 'error', 'message': str(e)}, status=500)
