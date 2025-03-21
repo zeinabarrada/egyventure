@@ -46,16 +46,18 @@ export default function Navigation() {
             onClick={toggleDropdown}
           />
 
-          {isDropdownOpen && (
-            <div className="dropdown-menu">
-              <p className="dropdown-user">Hi, {user.firstName}!</p>
-              <hr />
-              <p className="dropdown-title">Likes</p>
-              <button className="logout-btn" onClick={logout}>
-                Logout
-              </button>
-            </div>
-          )}
+          {isDropdownOpen &&
+            (console.log("Rendering dropdown menu"),
+            (
+              <div className="dropdown-menu">
+                <p className="dropdown-user">Hi,{user._id}!</p>
+                <hr />
+                <p className="dropdown-title">Likes</p>
+                <button className="logout-btn" onClick={logout}>
+                  Logout
+                </button>
+              </div>
+            ))}
         </div>
       )}
     </ul>

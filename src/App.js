@@ -9,16 +9,20 @@ import { AuthProvider } from "./components/Registration/AuthContext.js";
 import { BrowserRouter as Router, Route, Routes } from "react-router-dom";
 import ChooseInterests from "./components/ChooseInterests.js";
 import HomeSection from "./components/Sections/HomeSection.js";
-
+import { useEffect } from "react";
+import pic from "./components/icon.png";
 function App() {
+  useEffect(() => {
+    document.title = "EGYVENTURE";
+    document.querySelector("link[rel='icon']").href = pic;
+  }, []);
   return (
-    <div className="App">
+    <div className="App d-flex flex-column min-vh-100">
       <AuthProvider>
         <Header />
 
-        <main>
+        <main className="flex-grow-1">
           <Routes>
-            {/* Home Route - Wrap all sections inside */}
             <Route
               path="/"
               element={
