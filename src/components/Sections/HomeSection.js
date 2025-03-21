@@ -1,7 +1,7 @@
 import "./Home.css";
 import { useNavigate } from "react-router-dom";
 
-function Home() {
+function HomeSection() {
   const navigate = useNavigate();
   return (
     <>
@@ -13,7 +13,10 @@ function Home() {
             wonders. Discover top attractions, hidden gems, and local favorites
             for an unforgettable adventure!
           </p>
-          <button className="cta-button" onClick={() => navigate("/login")}>
+          <button
+            className="cta-button"
+            onClick={() => navigate("/authentication")}
+          >
             Begin your journey - Sign Up
           </button>
         </div>
@@ -22,4 +25,4 @@ function Home() {
   );
 }
 
-export default Home;
+export default HomeSection;

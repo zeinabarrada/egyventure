@@ -3,11 +3,13 @@ import { useNavigate } from "react-router-dom";
 import axios from "axios";
 import "./Registeration.css";
 import sideImage from "./sidepicc.jpeg";
-import api from "../api"; // Replace with your image path
+import { useAuth } from "./AuthContext";
 
 function AuthForm() {
   const navigate = useNavigate();
+  const { login } = useAuth();
   const [isLogin, setIsLogin] = useState(true);
+  const [showPassword, setShowPassword] = useState(false);
   const [formData, setFormData] = useState({
     firstName: "",
     lastName: "",
@@ -35,7 +37,13 @@ function AuthForm() {
           email: formData.email,
           password: formData.password,
         });
+
         if (response.data.success) {
+          const userData = {
+            token: response.data.token,
+            user: response.data.user, // Ensure backend sends user details
+          };
+          login(userData);
           navigate("/homepage");
         } else {
           alert("Login failed:" + response.data.message);
@@ -50,6 +58,11 @@ function AuthForm() {
           password: formData.password,
         });
         if (response.data.success) {
+          const userData = {
+            token: response.data.token,
+            user: response.data.user, // Ensure backend sends user details
+          };
+          login(userData); // Call login function from AuthContext
           navigate("/chooseinterests");
         } else {
           alert("Sign up failed:" + response.data.message);
@@ -120,13 +133,19 @@ function AuthForm() {
               required
             />
             <input
-              type="password"
+              type={showPassword ? "text" : "password"}
               name="password"
               placeholder="Password"
               value={formData.password}
               onChange={handleChange}
               required
             />
+            <button
+              type="button"
+              onClick={() => setShowPassword(!showPassword)}
+            >
+              {showPassword ? "Hide" : "Show"}
+            </button>
             {!isLogin && (
               <input
                 type="password"
