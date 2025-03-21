@@ -44,24 +44,27 @@ def signup(request):
             return JsonResponse({'error': f'Missing field: {str(e)}'}, status=400)
         except Exception as e:            
             return JsonResponse({'error': 'An unexpected error occurred. Please try again later.'}, status=500)
-    else:
-        # Render the form template for GET requests
-        return render(request, 'signup.html')
 
 
 @csrf_exempt
 def login(request):
     if request.method == 'POST':
-        try:            
+        try:                        
             data = json.loads(request.body)  
+
             email = data['email']
-            password = data['password']
-            
-            user = users_db.find_one({'email': email})
+            password = data['password']            
+
+            user = users_db.find_one({'email': email})            
 
             if user:                
                 if  password == user['password']:
-                    return JsonResponse({'success':True,'message': 'Login successful!', 'user': str(user['_id'])}, status=200)
+                    return JsonResponse({
+                        'success':True,
+                        'message': 'Login successful!',
+                        'user_id': str(user['_id']), 
+                        'first_name': str(user['fname'])}, 
+                        status=200)
                 else:
                     return JsonResponse({'error': 'Invalid username or password.'}, status=401)
             else:
@@ -71,8 +74,6 @@ def login(request):
             return JsonResponse({'error': f'Missing field: {str(e)}'}, status=400)
         except Exception as e:
             return JsonResponse({'error': f'An error occurred: {str(e)}'}, status=500)
-    else:        
-        return render(request, 'login.html')
 
 
 @csrf_exempt
