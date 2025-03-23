@@ -9,6 +9,7 @@ class User(models.Model):
     gender = models.CharField(max_length=100)
     email = models.EmailField(max_length=200)
     password = models.CharField(max_length=100)
+    interests = models.CharField(max_length=2000)
 
     def __str__(self):
         return self.fname

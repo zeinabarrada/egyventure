@@ -152,3 +152,82 @@ def get_user(request):
 
         except Exception as e:
             return JsonResponse({'status': 'error', 'message': str(e)}, status=500)
+
+
+def word2vec_recommendations(request):
+    import numpy as np
+    import pandas as pd
+    from gensim.models import Word2Vec
+    from sklearn.metrics.pairwise import cosine_similarity
+    
+    try:
+        # 1. Get user data
+        user_id = ObjectId('67d9e145c008daadabbbfa37')
+        user = db.users.find_one({'_id': user_id})
+        interests = user['interests']  # "sights & landmarks, sacred & religious sites"
+        
+        # 2. Get attractions from MongoDB
+        attractions = list(db.attractions.find({}))
+        df = pd.DataFrame(attractions)
+        
+        # 3. Preprocessing
+        def preprocess(text):
+            return [word.strip().lower() for word in text.split(',')]
+        
+        # Process attractions
+        df['categories_cleaned'] = df['categories'].apply(
+            lambda x: preprocess(x) if x else []
+        )
+        
+        # Process user interests
+        user_interests_cleaned = preprocess(interests)
+        
+        # 4. Word2Vec Model
+        # Create training data from attraction categories
+        sentences = [doc.split() for doc in df['categories'].fillna('').str.lower()]
+        
+        # Train model
+        model = Word2Vec(
+            sentences=sentences,
+            vector_size=100,
+            window=5,
+            min_count=1,
+            workers=4
+        )
+        
+        # 5. Generate Embeddings
+        # Attraction embeddings
+        attraction_embeddings = []
+        for tags in df['categories']:
+            vectors = [model.wv[word] for word in tags.split() if word in model.wv]
+            avg_vector = np.mean(vectors, axis=0) if vectors else np.zeros(100)
+            attraction_embeddings.append(avg_vector)
+        
+        # User embedding
+        user_vectors = [model.wv[word] for word in ' '.join(user_interests_cleaned).split() if word in model.wv]
+        user_embedding = np.mean(user_vectors, axis=0) if user_vectors else np.zeros(100)
+        
+        # 6. Calculate Similarity
+        similarities = cosine_similarity([user_embedding], attraction_embeddings)[0]
+        
+        # 7. Get top n attractions
+        n =10
+        top_indices = np.argsort(similarities)[::-1][:n]
+        recommended_attractions = df.iloc[top_indices][['_id', 'name']]
+        
+        # Convert ObjectIds to strings
+        recommended_ids = [str(oid) for oid in recommended_attractions]
+        
+        recommendations = [{
+            "id": str(attraction['_id']),
+            "name": attraction['name']
+        } for _, attraction in recommended_attractions.iterrows()]
+        
+        return JsonResponse({
+            "user_id": str(user_id),
+            "user_name": user['fname'],
+            "recommendations": recommendations
+        })
+        
+    except Exception as e:
+        return JsonResponse({"error": str(e)}, status=500)
