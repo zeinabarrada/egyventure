@@ -1,3 +1,8 @@
+import numpy as np
+import pandas as pd
+from gensim.models import Word2Vec
+from sklearn.metrics.pairwise import cosine_similarity
+
 from django.shortcuts import render
 from django.http import JsonResponse
 from django.views.decorators.csrf import csrf_exempt
@@ -169,7 +174,7 @@ def post_interests(request):
                 return JsonResponse({'status': 'error', 'message': 'User interests are required.'}, status=400)
             
             user_id = ObjectId(user_id)
-            
+
             users_db.find_one_and_update(
                 {'_id': user_id},
                 {'$set': {'interests': interests}},
@@ -179,16 +184,14 @@ def post_interests(request):
         except Exception as e:
             return JsonResponse({'status': 'error', 'message': str(e)}, status=500)
 
-
+@csrf_exempt
 def word2vec_recommendations(request):
-    import numpy as np
-    import pandas as pd
-    from gensim.models import Word2Vec
-    from sklearn.metrics.pairwise import cosine_similarity
-    
     try:
+        data = json.loads(request.body)
+        id = data.get('id')
+        
         # 1. Get user data
-        user_id = ObjectId('67d9e145c008daadabbbfa37')
+        user_id = ObjectId(id)
         user = db.users.find_one({'_id': user_id})
         interests = user['interests']  # "sights & landmarks, sacred & religious sites"
         
@@ -237,16 +240,18 @@ def word2vec_recommendations(request):
         similarities = cosine_similarity([user_embedding], attraction_embeddings)[0]
         
         # 7. Get top n attractions
-        n =10
+        n = 10
         top_indices = np.argsort(similarities)[::-1][:n]
-        recommended_attractions = df.iloc[top_indices][['_id', 'name']]
+        recommended_attractions = df.iloc[top_indices][['_id', 'name', 'description', 'image']]
         
         # Convert ObjectIds to strings
         recommended_ids = [str(oid) for oid in recommended_attractions]
         
         recommendations = [{
             "id": str(attraction['_id']),
-            "name": attraction['name']
+            "name": attraction['name'], 
+            "descriptions":attraction['description'],
+            "image":attraction['image'],
         } for _, attraction in recommended_attractions.iterrows()]
         
         return JsonResponse({
