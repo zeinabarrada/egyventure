@@ -75,7 +75,7 @@ def login(request):
                         'success':True,
                         'message': 'Login successful!',
                         'user_id': str(user['_id']), 
-                        'first_name': str(user['fname'])
+                        'name': str(user['fname'])
                         }, status=200)
                 else:
                     return JsonResponse({'error': 'Invalid username or password.'}, status=401)
