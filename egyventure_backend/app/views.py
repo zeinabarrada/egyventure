@@ -22,7 +22,7 @@ def signup(request):
             username = data['username']
             gender = data['gender']
             email = data['email']
-            password = data['password']
+            password = data['password']            
             
             user = {
                 'fname': fname,
@@ -30,7 +30,8 @@ def signup(request):
                 'username': username,
                 'gender': gender,
                 'email': email,
-                'password': password  # hash the password before storing it
+                'password': password,
+                'interests':''
             }
         
             result = users_db.insert_one(user)
@@ -150,6 +151,31 @@ def get_user(request):
             # Return the attraction in a JsonResponse
             return JsonResponse({'status': 'success', 'user': user}, safe=False)
 
+        except Exception as e:
+            return JsonResponse({'status': 'error', 'message': str(e)}, status=500)
+
+
+@csrf_exempt
+def post_interests(request):
+    if request.method =='POST':
+        try:
+            data = json.loads(request.body)
+            user_id = data.get('id')            
+            interests = data.get('interests')            
+
+            if not user_id:
+                return JsonResponse({'status': 'error', 'message': 'User ID is required.'}, status=400)
+            elif not interests:
+                return JsonResponse({'status': 'error', 'message': 'User interests are required.'}, status=400)
+            
+            user_id = ObjectId(user_id)
+            
+            users_db.find_one_and_update(
+                {'_id': user_id},
+                {'$set': {'interests': interests}},
+                upsert=True)
+
+            return JsonResponse({'status' : 'success'})
         except Exception as e:
             return JsonResponse({'status': 'error', 'message': str(e)}, status=500)
 
