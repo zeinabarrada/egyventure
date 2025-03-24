@@ -8,15 +8,19 @@ export const AuthProvider = ({ children }) => {
   const [isAuthenticated, setIsAuthenticated] = useState(false);
   const [user, setUser] = useState(null);
 
-  // Restore user data from local storage on mount
   useEffect(() => {
     const storedUser = localStorage.getItem("user");
     if (storedUser) {
-      setUser(JSON.parse(storedUser));
-      setIsAuthenticated(true);
+      try {
+        const parsedUser = JSON.parse(storedUser);
+        setUser(parsedUser);
+        setIsAuthenticated(true);
+      } catch (error) {
+        console.error("Failed to parse user data from localStorage:", error);
+        localStorage.removeItem("user"); // Clear corrupted data
+      }
     }
   }, []);
-
   // Login function
   const login = (userData) => {
     setUser(userData);

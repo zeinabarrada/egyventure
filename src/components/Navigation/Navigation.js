@@ -19,9 +19,8 @@ export default function Navigation() {
       section.scrollIntoView({ behavior: "smooth", block: "start" });
     }
   };
-  const toggleDropdown = (e) => {
-    setIsDropdownOpen((prev) => !prev);
-  };
+
+  console.log("User name:", user?.name);
 
   return (
     <ul className="navigation">
@@ -37,29 +36,47 @@ export default function Navigation() {
       <li href="#aboutus" onClick={() => handleScroll("about")}>
         About Us
       </li>
-      {isAuthenticated && (
-        <div className="profile-container">
+
+      <div className="profile-container">
+        <div className="dropdown d-flex align-items-center">
+          {/* Profile Image */}
           <img
             src={defaultAvatar}
             alt="Profile"
             className="profile-circle"
-            onClick={toggleDropdown}
+            id="dropdownMenuButton"
+            data-bs-toggle="dropdown"
+            aria-expanded="false"
+            style={{
+              cursor: "pointer",
+              width: "50px",
+              height: "50px",
+              borderRadius: "50%",
+            }}
           />
 
-          {isDropdownOpen &&
-            (console.log("Rendering dropdown menu"),
-            (
-              <div className="dropdown-menu">
-                <p className="dropdown-user">Hi,{user._id}!</p>
-                <hr />
-                <p className="dropdown-title">Likes</p>
-                <button className="logout-btn" onClick={logout}>
-                  Logout
-                </button>
-              </div>
-            ))}
+          {/* Dropdown Toggle Icon */}
+          <span
+            className="ms-2 dropdown-toggle"
+            data-bs-toggle="dropdown"
+            aria-expanded="false"
+            style={{ cursor: "pointer", fontSize: "20px" }}
+          ></span>
+
+          {/* Dropdown Menu */}
+          <ul className="dropdown-menu" aria-labelledby="dropdownMenuButton">
+            <li>
+              <p className="dropdown-user">Hi, {user?.name}!</p>
+            </li>
+
+            <li>
+              <button className="logout-btn" onClick={logout}>
+                Logout
+              </button>
+            </li>
+          </ul>
         </div>
-      )}
+      </div>
     </ul>
   );
 }

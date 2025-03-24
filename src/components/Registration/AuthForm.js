@@ -33,15 +33,15 @@ function AuthForm() {
     }
     try {
       if (isLogin) {
-        const response = await axios.post("http://127.0.0.1:8000/login", {
+        const response = await axios.post("http://127.0.0.1:8000/login/", {
           email: formData.email,
           password: formData.password,
         });
-
+        console.log("Backend Response:", response.data);
         if (response.data.success) {
           const userData = {
-            token: response.data.token,
-            user: response.data.user, // Ensure backend sends user details
+            id: response.data.user_id,
+            name: response.data.name, // Ensure backend sends user details
           };
           login(userData);
           navigate("/homepage");
@@ -49,7 +49,7 @@ function AuthForm() {
           alert("Login failed:" + response.data.message);
         }
       } else {
-        const response = await axios.post("http://127.0.0.1:8000/signup", {
+        const response = await axios.post("http://127.0.0.1:8000/signup/", {
           firstName: formData.firstName,
           lastName: formData.lastName,
           username: formData.username,
@@ -57,12 +57,15 @@ function AuthForm() {
           email: formData.email,
           password: formData.password,
         });
+        console.log("Backend Response:", response.data);
         if (response.data.success) {
           const userData = {
-            token: response.data.token,
-            user: response.data.user, // Ensure backend sends user details
+            id: response.data.id,
+            name: response.data.name, // Ensure backend sends user details
           };
           login(userData); // Call login function from AuthContext
+          localStorage.setItem("user", JSON.stringify(userData)); // ✅ Save to localStorage
+
           navigate("/chooseinterests");
         } else {
           alert("Sign up failed:" + response.data.message);

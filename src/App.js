@@ -11,6 +11,9 @@ import ChooseInterests from "./components/ChooseInterests.js";
 import HomeSection from "./components/Sections/HomeSection.js";
 import { useEffect } from "react";
 import pic from "./components/icon.png";
+import "slick-carousel/slick/slick.css";
+import "slick-carousel/slick/slick-theme.css";
+
 function App() {
   useEffect(() => {
     document.title = "EGYVENTURE";
