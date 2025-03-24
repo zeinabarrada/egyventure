@@ -185,10 +185,11 @@ def post_interests(request):
             return JsonResponse({'status': 'error', 'message': str(e)}, status=500)
 
 @csrf_exempt
+
 def word2vec_recommendations(request):
     try:
-        data = json.loads(request.body)
-        id = data.get('id')
+        # data = json.loads(request.body)
+        id = request.GET.get('id')
         
         # 1. Get user data
         user_id = ObjectId(id)
