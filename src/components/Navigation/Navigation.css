@@ -40,7 +40,7 @@
   width: 120px;
   display: flex; /* Use flex if you want flex-direction */
   flex-direction: column; /* Align items vertically */
-  z-index: 1000;
+  z-index: 1000 !important;
   visibility: visible;
 }
 
