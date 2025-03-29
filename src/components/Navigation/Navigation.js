@@ -1,18 +1,14 @@
-import React from "react";
 import "./Navigation.css";
 import { Link } from "react-router-dom";
 import { useAuth } from "../Registration/AuthContext";
 import defaultAvatar from "./defaultAvatar.jpg";
-import { useState, useEffect } from "react";
+import { useState, useEffect, useRef } from "react";
 
 export default function Navigation() {
   const { isAuthenticated, logout, user } = useAuth();
-
   const [isDropdownOpen, setIsDropdownOpen] = useState(false);
+  const dropdownRef = useRef(null);
 
-  useEffect(() => {
-    console.log("Dropdown state:", isDropdownOpen);
-  }, [isDropdownOpen]);
   const handleScroll = (id) => {
     const section = document.getElementById(id);
     if (section) {
@@ -20,63 +16,104 @@ export default function Navigation() {
     }
   };
 
-  console.log("User name:", user?.name);
+  // Close dropdown when clicking outside
+  useEffect(() => {
+    const handleClickOutside = (event) => {
+      if (dropdownRef.current && !dropdownRef.current.contains(event.target)) {
+        setIsDropdownOpen(false);
+      }
+    };
+
+    document.addEventListener("mousedown", handleClickOutside);
+    return () => {
+      document.removeEventListener("mousedown", handleClickOutside);
+    };
+  }, []);
+
+  if (!isAuthenticated) {
+    return null;
+  }
 
   return (
-    <ul className="navigation">
-      <li href="#home" onClick={() => handleScroll("home")}>
-        <Link to="/">Home</Link>
-      </li>
-      <li href="#destinations" onClick={() => handleScroll("destinations")}>
-        Destinations
-      </li>
-      <li href="#safetytips" onClick={() => handleScroll("safety")}>
-        Safety Tips
-      </li>
-      <li href="#aboutus" onClick={() => handleScroll("about")}>
-        About Us
-      </li>
+    <nav className="navigation-container">
+      <div className="nav-logo">EGYVENTURE</div>
 
-      <div className="profile-container">
-        <div className="dropdown d-flex align-items-center">
-          {/* Profile Image */}
-          <img
-            src={defaultAvatar}
-            alt="Profile"
-            className="profile-circle"
-            id="dropdownMenuButton"
-            data-bs-toggle="dropdown"
-            aria-expanded="false"
-            style={{
-              cursor: "pointer",
-              width: "50px",
-              height: "50px",
-              borderRadius: "50%",
-            }}
-          />
+      <ul className="nav-links">
+        <li className="nav-item">
+          <Link
+            to="/"
+            className="nav-link"
+            onClick={() => handleScroll("home")}
+          >
+            Home
+          </Link>
+        </li>
+        <li className="nav-item">
+          <Link
+            to="/"
+            className="nav-link"
+            onClick={() => handleScroll("destinations")}
+          >
+            Destinations
+          </Link>
+        </li>
+        <li className="nav-item">
+          <Link
+            to="/"
+            className="nav-link"
+            onClick={() => handleScroll("safety")}
+          >
+            Safety Tips
+          </Link>
+        </li>
+        <li className="nav-item">
+          <Link
+            to="/"
+            className="nav-link"
+            onClick={() => handleScroll("about")}
+          >
+            About Us
+          </Link>
+        </li>
+      </ul>
 
-          {/* Dropdown Toggle Icon */}
-          <span
-            className="ms-2 dropdown-toggle"
-            data-bs-toggle="dropdown"
-            aria-expanded="false"
-            style={{ cursor: "pointer", fontSize: "20px" }}
-          ></span>
+      <div className="profile-container" ref={dropdownRef}>
+        <div className="profile-dropdown">
+          <div
+            className="profile-toggle"
+            onClick={() => setIsDropdownOpen(!isDropdownOpen)}
+          >
+            <img src={defaultAvatar} alt="Profile" className="profile-avatar" />
+            <span
+              className={`profile-caret ${isDropdownOpen ? "open" : ""}`}
+            ></span>
+          </div>
 
-          {/* Dropdown Menu */}
-          <ul className="dropdown-menu" aria-labelledby="dropdownMenuButton">
-            <li>
+          <div className={`dropdown-menu ${isDropdownOpen ? "show" : ""}`}>
+            <div className="dropdown-header">
               <p className="dropdown-user">Hi, {user?.name}!</p>
-            </li>
-
-            <li>
-              <button className="logout-btn" onClick={logout}>
-                Logout
-              </button>
-            </li>
-          </ul>
+            </div>
+            <button
+              className="dropdown-item"
+              onClick={() => {
+                logout();
+                setIsDropdownOpen(false);
+              }}
+            >
+              Likes
+            </button>
+            <button
+              className="dropdown-item"
+              onClick={() => {
+                logout();
+                setIsDropdownOpen(false);
+              }}
+            >
+              Logout
+            </button>
+          </div>
         </div>
       </div>
-    </ul>
+    </nav>
   );
 }

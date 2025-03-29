@@ -1,4 +1,4 @@
-import { useState, useContext } from "react";
+import { useState } from "react";
 import "./ChooseInterests.css";
 import axios from "axios";
 import { useAuth } from "../components/Registration/AuthContext";
