@@ -36,9 +36,7 @@ function App() {
                   <section id="destinations">
                     <Destinations />
                   </section>
-                  <section id="safety">
-                    <SafetyTips />
-                  </section>
+
                   <section id="about">
                     <AboutUs />
                   </section>

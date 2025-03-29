@@ -34,7 +34,7 @@ export const AuthProvider = ({ children }) => {
     setUser(null);
     setIsAuthenticated(false);
     localStorage.removeItem("user"); // Remove user data from local storage
-    navigate("/authentication"); // Navigate to login page after logout
+    navigate("/"); // Navigate to login page after logout
   };
 
   return (
