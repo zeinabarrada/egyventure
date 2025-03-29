@@ -244,7 +244,7 @@ def word2vec_recommendations(request):
         # 7. Get top n attractions
         n = 10
         top_indices = np.argsort(similarities)[::-1][:n]
-        recommended_attractions = df.iloc[top_indices][['_id', 'name', 'description', 'image']]
+        recommended_attractions = df.iloc[top_indices]
         
         # Convert ObjectIds to strings
         recommended_ids = [str(oid) for oid in recommended_attractions]
@@ -252,7 +252,9 @@ def word2vec_recommendations(request):
         recommendations = [{
             "id": str(attraction['_id']),
             "name": attraction['name'], 
-            "descriptions":attraction['description'],
+            "descriptions":attraction['description'],            
+            "categories": attraction['categories'],
+            "city": attraction['city'],        
             "image":attraction['image'],
         } for _, attraction in recommended_attractions.iterrows()]
         
@@ -393,9 +395,11 @@ def NMF_SVD(request):
         # Prepare response
         recommendations = [{
             "id": str(attraction["_id"]),
-            "name": attraction["name"],
             "score": round(next(rec["score"] for rec in top_recommendations 
                             if rec["attraction_id"] == str(attraction["_id"])), 2),
+            "name": attraction["name"],
+            "categories": attraction['categories'],
+            "city": attraction['city'],            
             "image": attraction.get("image", "")
         } for attraction in recommended_attractions]
 
@@ -412,3 +416,47 @@ def NMF_SVD(request):
 
     except Exception as e:
         return JsonResponse({"error": str(e)}, status=500)
+
+@csrf_exempt
+def get_must_see(request):
+    try:
+        rating_threshold = 4
+        min_reviews = 1000
+
+        df = pd.DataFrame(list(attractions_db.find({})))
+
+        # Filter highest-rated attractions
+        highest_rated = df[df['excellentRatings'] > (df['terribleRatings'] + df['poorRatings'] + df['averageRatings'] + df['veryGoodRatings'])].copy()
+        highest_rated = highest_rated[highest_rated['numberOfRatings'] >= 100]
+        highest_rated = highest_rated[highest_rated['rating'] > rating_threshold]
+        highest_rated.sort_values(by='numberOfRatings', ascending=False, inplace=True)
+
+        # Filter most-rated attractions
+        most_rated = df[df['numberOfRatings'] >= min_reviews].copy()
+        most_rated.sort_values(by='numberOfRatings', ascending=False, inplace=True)
+
+        # Convert DataFrame rows to dictionaries for serialization
+        highest_rated_list = [{
+            "id": str(attraction["_id"]),
+            "name": attraction["name"],
+            "description": attraction['description'],
+            "categories": attraction['categories'],
+            "city": attraction['city'],
+            "image": attraction.get("image", "")
+        } for attraction in highest_rated.to_dict('records')]  # Convert DataFrame to list of dicts
+
+        most_rated_list = [{
+            "id": str(attraction["_id"]),
+            "name": attraction["name"],
+            "description": attraction['description'],
+            "categories": attraction['categories'],
+            "city": attraction['city'],
+            "image": attraction.get("image", "")
+        } for attraction in most_rated.to_dict('records')]  # Convert DataFrame to list of dicts
+
+        return JsonResponse({
+            'highest_rated': highest_rated_list,
+            'most_rated': most_rated_list
+        })
+    except Exception as e:
+        return JsonResponse({'message': str(e)}, status=500)
