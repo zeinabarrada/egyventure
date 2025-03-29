@@ -1,0 +1,85 @@
+/* Simple About Us Section */
+.about-us-section {
+  padding: 3rem 0;
+  background-color: #fff;
+  color: #333;
+  text-align: center;
+}
+
+.about-container {
+  max-width: 800px;
+  margin: 0 auto;
+  padding: 0 1.5rem;
+}
+
+.section-title {
+  font-size: 2rem;
+  color: #1a365d;
+  margin-bottom: 1rem;
+}
+
+.section-divider {
+  width: 60px;
+  height: 3px;
+  background: #e3b04b;
+  margin: 0 auto 2rem;
+}
+
+.about-text {
+  font-size: 1.1rem;
+  line-height: 1.6;
+  margin-bottom: 2rem;
+  color: #555;
+}
+
+.key-points {
+  display: flex;
+  justify-content: space-between;
+  flex-wrap: wrap;
+  gap: 1.5rem;
+  margin: 2rem 0;
+}
+
+.point {
+  flex: 1;
+  min-width: 200px;
+  padding: 1.5rem;
+  background: #f8f8f8;
+  border-radius: 8px;
+}
+
+.point-icon {
+  font-size: 2rem;
+  display: block;
+  margin-bottom: 0.5rem;
+}
+
+.point h3 {
+  font-size: 1.2rem;
+  color: #1a365d;
+  margin-bottom: 0.5rem;
+}
+
+.point p {
+  font-size: 0.95rem;
+  color: #666;
+  line-height: 1.5;
+}
+
+.closing-text {
+  font-size: 1.1rem;
+  font-style: italic;
+  color: #444;
+  margin-top: 1.5rem;
+}
+
+/* Responsive adjustments */
+@media (max-width: 600px) {
+  .key-points {
+    flex-direction: column;
+  }
+
+  .point {
+    min-width: 100%;
+  }
+}

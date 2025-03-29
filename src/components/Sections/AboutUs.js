@@ -1,38 +1,48 @@
-import React, { forwardRef } from "react";
-import "./Sections.css";
+import React from "react";
+import "./AboutUs.css";
 
 function AboutUs() {
   return (
-    <>
-      {" "}
-      <section id="aboutus" className="section about-us-section">
+    <section id="aboutus" className="about-us-section">
+      <div className="about-container">
+        <h2 className="section-title">About EGYVENTURE</h2>
+        <div className="section-divider"></div>
+
         <div className="about-content">
-          <h2>About Us</h2>
           <p className="about-text">
-            Welcome to <strong>EGYVENTURE</strong>, your ultimate guide to
-            exploring the wonders of Egypt! We are passionate about travel and
-            dedicated to helping you discover the rich history, vibrant culture,
-            and breathtaking landscapes of this incredible country.
+            We're a team of passionate Egyptian travelers dedicated to showing
+            visitors the <strong>real Egypt</strong> - beyond the typical
+            tourist routes.
           </p>
-          <p className="about-text">
-            Our mission is to provide you with the best travel experiences, from
-            iconic landmarks like the Pyramids of Giza to hidden gems off the
-            beaten path. Whether you're a history enthusiast, an adventure
-            seeker, or simply looking for a relaxing getaway, we've got you
-            covered.
-          </p>
-          <p className="about-text">
-            We created this platform to make travel planning easier, safer, and
-            more enjoyable. With curated recommendations, safety tips, and local
-            insights, we aim to inspire and empower you to embark on
-            unforgettable journeys.
-          </p>
-          <p className="about-text">
-            Join us in exploring Egypt – where history meets adventure!
+
+          <div className="key-points">
+            <div className="point">
+              <span className="point-icon">✈️</span>
+              <h3>Authentic Experiences</h3>
+              <p>Curated adventures that reveal Egypt's true culture</p>
+            </div>
+
+            <div className="point">
+              <span className="point-icon">🛡️</span>
+              <h3>Safety First</h3>
+              <p>Verified locations and reliable local guides</p>
+            </div>
+
+            <div className="point">
+              <span className="point-icon">❤️</span>
+              <h3>Local Love</h3>
+              <p>Supporting community businesses and guides</p>
+            </div>
+          </div>
+
+          <p className="closing-text">
+            Our mission is simple: to help you experience Egypt's wonders{" "}
+            <strong>safely</strong>, <strong>authentically</strong>, and{" "}
+            <strong>memorably</strong>.
           </p>
         </div>
-      </section>
-    </>
+      </div>
+    </section>
   );
 }
 
