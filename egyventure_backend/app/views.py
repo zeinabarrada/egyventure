@@ -6,10 +6,9 @@ from surprise import NMF, SVD, Dataset, Reader
 from django.shortcuts import render
 from django.http import JsonResponse
 from django.views.decorators.csrf import csrf_exempt
-from pymongo import MongoClient
+from pymongo import MongoClient, ReturnDocument
 from bson import ObjectId
 import json
-from sklearn.model_selection import train_test_split
 from sklearn.metrics import f1_score, precision_score, recall_score, accuracy_score
 
 
@@ -417,6 +416,7 @@ def NMF_SVD(request):
     except Exception as e:
         return JsonResponse({"error": str(e)}, status=500)
 
+
 @csrf_exempt
 def get_must_see(request):
     try:
@@ -460,3 +460,40 @@ def get_must_see(request):
         })
     except Exception as e:
         return JsonResponse({'message': str(e)}, status=500)
+
+
+@csrf_exempt
+def add_to_likes(request):
+    try:        
+        if 'application/json' in request.content_type:
+            try:
+                data = json.loads(request.body.decode('utf-8'))
+            except json.JSONDecodeError:
+                return JsonResponse({'error': 'Invalid JSON data'}, status=400)
+        else:
+            data = request.POST
+
+        user_id = data.get('user_id')
+        attraction_id = data.get('attraction_id')
+
+        if not user_id or not attraction_id:
+            return JsonResponse({"messages": "Both user_id and attraction_id are required"}, status=400)
+        
+        user_oid = ObjectId(user_id)
+        attraction_oid = ObjectId(attraction_id)
+
+        updated_user = users_db.find_one_and_update(
+            {'_id':user_oid},
+            {"$addToSet": {"attraction_ids": attraction_oid}},
+                return_document=True
+            )
+                
+        if not updated_user:
+                return JsonResponse({"message":"User not found"}, status=500)
+        
+        return JsonResponse({
+            "success": True,
+            "user": str(updated_user)
+        }, status=200)
+    except Exception as e:
+        return JsonResponse({"error": f"Server error: {str(e)}"}, status=500)

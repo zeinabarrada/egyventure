@@ -8,7 +8,9 @@ urlpatterns = [
     path('get_attractions/', views.get_attractions, name='get_attractions'),    
     path('get_attraction/', views.get_attraction, name='get_attraction'),
     path('must_see/', views.get_must_see, name='must_see'),
+
     path('get_user/', views.get_user, name='get_user'),     
+    path('add_to_likes/', views.add_to_likes, name='add_to_likes'),     
     path('post_interests/', views.post_interests, name='post_interests'),
     
     path('word2vec/', views.word2vec_recommendations, name='word2vec'),
