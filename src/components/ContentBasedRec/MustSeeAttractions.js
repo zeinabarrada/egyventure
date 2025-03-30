@@ -11,30 +11,53 @@ import {
 import { useAuth } from "../Registration/AuthContext";
 import "./Card.css";
 
-const Recommendations = () => {
-  const [cards, setCards] = useState([]);
+const MustSeeAttractions = () => {
+  const [attractions, setAttractions] = useState([]);
   const [likedCards, setLikedCards] = useState([]);
-  const { user } = useAuth();
-  const userId = user?.id;
   const sliderRef = useRef(null);
   const [showLeftArrow, setShowLeftArrow] = useState(false);
   const [showRightArrow, setShowRightArrow] = useState(true);
   const [expandedCards, setExpandedCards] = useState({});
-
+  const { user } = useAuth();
+  const userId = user?.id;
   useEffect(() => {
     const fetchData = async () => {
-      if (!userId) return;
       try {
-        const response = await axios.get("http://127.0.0.1:8000/word2vec/", {
-          params: { id: userId },
-        });
-        setCards(response.data.recommendations);
+        const response = await axios.get("http://127.0.0.1:8000/must_see/");
+        const attractionsData = response.data.must_see || [];
+
+        const processedAttractions = attractionsData.map((attraction) => ({
+          id: attraction.id,
+          name: attraction.name,
+          description: attraction.description,
+          image: attraction.image,
+          city: attraction.city, // Map 'city' to 'location' if needed
+          category:
+            attraction.categories?.split(",")[0]?.trim() || "Attraction",
+        }));
+
+        setAttractions(processedAttractions);
       } catch (error) {
-        console.error("Error fetching data:", error);
+        console.error("Error:", error);
       }
     };
     fetchData();
-  }, [userId]);
+  }, []);
+  const toggleDescription = (cardId) => {
+    setExpandedCards((prev) => ({
+      ...prev,
+      [cardId]: !prev[cardId],
+    }));
+  };
+
+  // Truncate description function
+  const truncateDescription = (text, cardId, maxLength = 100) => {
+    if (!text) return "";
+    if (expandedCards[cardId] || text.length <= maxLength) {
+      return text;
+    }
+    return text.substring(0, maxLength) + "...";
+  };
 
   const toggleLike = (cardId) => {
     setLikedCards((prev) =>
@@ -69,28 +92,13 @@ const Recommendations = () => {
       setShowRightArrow(scrollLeft < scrollWidth - clientWidth - 1);
     }
   };
-  const toggleDescription = (cardId) => {
-    setExpandedCards((prev) => ({
-      ...prev,
-      [cardId]: !prev[cardId],
-    }));
-  };
-
-  // Truncate description function
-  const truncateDescription = (text, cardId, maxLength = 100) => {
-    if (!text) return "";
-    if (expandedCards[cardId] || text.length <= maxLength) {
-      return text;
-    }
-    return text.substring(0, maxLength) + "...";
-  };
 
   return (
     <section className="recommendations-section">
       <div className="container">
         <header className="section-header">
           <h2>
-            <span className="highlight">Recommended just for you</span>
+            <span className="highlight">Must See Attractions</span>
           </h2>
         </header>
 
@@ -110,21 +118,25 @@ const Recommendations = () => {
             ref={sliderRef}
             onScroll={handleScroll}
           >
-            {cards.length > 0 ? (
-              cards.map((card) => (
-                <article key={card.id} className="recommendation-card">
+            {attractions.length > 0 ? (
+              attractions.map((attraction) => (
+                <article key={attraction.id} className="recommendation-card">
                   <div className="card-media">
-                    <img src={card.image} alt={card.name} loading="lazy" />
+                    <img
+                      src={attraction.image}
+                      alt={attraction.name}
+                      loading="lazy"
+                    />
                     <button
                       className={`like-btn ${
-                        likedCards.includes(card.id) ? "liked" : ""
+                        likedCards.includes(attraction.id) ? "liked" : ""
                       }`}
-                      onClick={() => toggleLike(card.id)}
+                      onClick={() => toggleLike(attraction.id)}
                       aria-label={
-                        likedCards.includes(card.id) ? "Unlike" : "Like"
+                        likedCards.includes(attraction.id) ? "Unlike" : "Like"
                       }
                     >
-                      {likedCards.includes(card.id) ? (
+                      {likedCards.includes(attraction.id) ? (
                         <FaHeart />
                       ) : (
                         <FaRegHeart />
@@ -132,41 +144,42 @@ const Recommendations = () => {
                     </button>
                     <div className="card-badges">
                       <span className="location-badge">
-                        <FaMapMarkerAlt /> {card.location || "Cairo"}
+                        <FaMapMarkerAlt /> {attraction.city || "Unknown"}
                       </span>
-                      {card.century && (
-                        <span className="era-badge">
-                          <FaCalendarAlt /> {card.century}
-                        </span>
-                      )}
                     </div>
                   </div>
                   <div className="card-content">
-                    <h3>{card.name}</h3>
+                    <h3>{attraction.name}</h3>
                     <div className="description-container">
                       <p className="description">
-                        {truncateDescription(card.descriptions, card.id)}
+                        {truncateDescription(
+                          attraction.description,
+                          attraction.id
+                        )}
                       </p>
-                      {card.descriptions && card.descriptions.length > 100 && (
-                        <button
-                          className="read-more-btn"
-                          onClick={() => toggleDescription(card.id)}
-                        >
-                          {expandedCards[card.id] ? "Read Less" : "Read More"}
-                        </button>
-                      )}
+                      {attraction.description &&
+                        attraction.description.length > 100 && (
+                          <button
+                            className="read-more-btn"
+                            onClick={() => toggleDescription(attraction.id)}
+                          >
+                            {expandedCards[attraction.id]
+                              ? "Read Less"
+                              : "Read More"}
+                          </button>
+                        )}
                     </div>
                     <div className="card-footer">
-                      <span className="category-tag">Historical Site</span>
-                      <div className="rating">★★★★☆</div>
+                      <span className="category-tag">
+                        {attraction.category}
+                      </span>
                     </div>
                   </div>
                 </article>
               ))
             ) : (
               <div className="no-results">
-                <p>We're curating special recommendations for you...</p>
-                <button className="refresh-btn">Refresh Recommendations</button>
+                <p>Loading must-see attractions...</p>
               </div>
             )}
           </div>
@@ -186,4 +199,4 @@ const Recommendations = () => {
   );
 };
 
-export default Recommendations;
+export default MustSeeAttractions;

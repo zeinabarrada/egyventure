@@ -357,3 +357,29 @@
     right: -15px;
   }
 }
+.description-container {
+  position: relative;
+  margin-bottom: 10px;
+}
+
+.description {
+  margin: 0;
+  line-height: 1.5;
+  display: -webkit-box;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+}
+
+.read-more-btn {
+  background: none;
+  border: none;
+  color: #0066cc;
+  cursor: pointer;
+  padding: 0;
+  margin-top: 5px;
+  font-size: 0.9em;
+}
+
+.read-more-btn:hover {
+  text-decoration: underline;
+}
