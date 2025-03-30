@@ -47,6 +47,7 @@ function App() {
             <Route path="/authentication" element={<AuthForm />} />
             <Route path="/chooseinterests" element={<ChooseInterests />} />
             <Route path="/homepage" element={<Home />} />
+            <Route path="/safetytips" element={<SafetyTips />} />
           </Routes>
         </main>
       </AuthProvider>

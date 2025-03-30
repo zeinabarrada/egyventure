@@ -76,7 +76,6 @@ const Recommendations = () => {
           <h2>
             <span className="highlight">Recommended just for you</span>
           </h2>
-          <p className="subtitle">Discover Egypt's hidden gems</p>
         </header>
 
         <div className="slider-container">

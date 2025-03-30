@@ -41,7 +41,7 @@ export default function Navigation() {
       <ul className="nav-links">
         <li className="nav-item">
           <Link
-            to="/"
+            to="/homepage"
             className="nav-link"
             onClick={() => handleScroll("home")}
           >
@@ -58,11 +58,7 @@ export default function Navigation() {
           </Link>
         </li>
         <li className="nav-item">
-          <Link
-            to="/"
-            className="nav-link"
-            onClick={() => handleScroll("safety")}
-          >
+          <Link to="/safetytips" className="nav-link">
             Safety Tips
           </Link>
         </li>

@@ -1,0 +1,136 @@
+/* Safety Tips Layout */
+.safety-tips-container {
+  display: grid;
+  grid-template-columns: 250px 1fr;
+  gap: 2rem;
+  max-width: 1200px;
+  margin: 0 auto;
+  padding: 2rem 1rem;
+  min-height: 80vh;
+}
+
+/* Navigation Styles */
+.safety-nav {
+  background: #f8f9fa;
+  border-radius: 8px;
+  padding: 1.5rem;
+  align-self: start;
+  position: sticky;
+  top: 1rem;
+}
+
+.safety-nav h2 {
+  font-size: 1.3rem;
+  color: #2d3748;
+  margin-top: 0;
+  padding-bottom: 0.5rem;
+  border-bottom: 1px solid #e2e8f0;
+}
+
+.safety-nav ul {
+  list-style: none;
+  padding: 0;
+  margin: 1rem 0 0 0;
+}
+
+.safety-nav li {
+  padding: 0.7rem 0;
+  cursor: pointer;
+  color: #4a5568;
+  border-bottom: 1px solid #edf2f7;
+  transition: all 0.2s ease;
+}
+
+.safety-nav li:hover {
+  color: #2d3748;
+  font-weight: 500;
+}
+
+.safety-nav li.active {
+  color: #d4a017;
+  font-weight: 600;
+}
+
+/* Content Styles */
+.safety-content {
+  background: white;
+  border-radius: 8px;
+  padding: 2rem;
+  box-shadow: 0 2px 10px rgba(0, 0, 0, 0.05);
+}
+
+.safety-content header {
+  margin-bottom: 2rem;
+  padding-bottom: 1rem;
+  border-bottom: 1px solid #e2e8f0;
+}
+
+.safety-content h1 {
+  font-size: 2rem;
+  color: #2d3748;
+  margin: 0 0 0.5rem 0;
+}
+
+.subtitle {
+  color: #718096;
+  font-size: 1.1rem;
+  margin: 0;
+}
+
+.safety-content article h2 {
+  color: #2d3748;
+  font-size: 1.5rem;
+  margin-top: 0;
+}
+
+.tips-list {
+  padding-left: 1.5rem;
+}
+
+.tips-list li {
+  margin-bottom: 1rem;
+  line-height: 1.6;
+  color: #4a5568;
+  position: relative;
+  padding-left: 1.5rem;
+}
+
+.tip-number {
+  position: absolute;
+  left: 0;
+  color: #d4a017;
+  font-weight: bold;
+}
+
+.emergency-box {
+  background: #fff8f0;
+  border-left: 4px solid #d4a017;
+  padding: 1.5rem;
+  margin-top: 2rem;
+  border-radius: 0 4px 4px 0;
+}
+
+.emergency-box h3 {
+  margin-top: 0;
+  color: #d4a017;
+}
+
+/* Responsive Design */
+@media (max-width: 768px) {
+  .safety-tips-container {
+    grid-template-columns: 1fr;
+  }
+
+  .safety-nav {
+    position: static;
+    margin-bottom: 2rem;
+  }
+
+  .safety-content {
+    padding: 1.5rem;
+  }
+
+  .safety-content h1 {
+    font-size: 1.8rem;
+  }
+}
