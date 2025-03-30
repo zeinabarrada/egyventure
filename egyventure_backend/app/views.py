@@ -6,7 +6,7 @@ from surprise import NMF, SVD, Dataset, Reader
 from django.shortcuts import render
 from django.http import JsonResponse
 from django.views.decorators.csrf import csrf_exempt
-from pymongo import MongoClient, ReturnDocument
+from pymongo import MongoClient
 from bson import ObjectId
 import json
 from sklearn.metrics import f1_score, precision_score, recall_score, accuracy_score
@@ -187,8 +187,7 @@ def post_interests(request):
 
 @csrf_exempt
 def word2vec_recommendations(request):
-    try:
-        # data = json.loads(request.body)
+    try:        
         id = request.GET.get('id')
         
         # 1. Get user data
@@ -423,40 +422,23 @@ def get_must_see(request):
         rating_threshold = 4
         min_reviews = 1000
 
-        df = pd.DataFrame(list(attractions_db.find({})))
-
-        # Filter highest-rated attractions
-        highest_rated = df[df['excellentRatings'] > (df['terribleRatings'] + df['poorRatings'] + df['averageRatings'] + df['veryGoodRatings'])].copy()
-        highest_rated = highest_rated[highest_rated['numberOfRatings'] >= 100]
-        highest_rated = highest_rated[highest_rated['rating'] > rating_threshold]
-        highest_rated.sort_values(by='numberOfRatings', ascending=False, inplace=True)
+        df = pd.DataFrame(list(attractions_db.find({})))        
 
         # Filter most-rated attractions
-        most_rated = df[df['numberOfRatings'] >= min_reviews].copy()
-        most_rated.sort_values(by='numberOfRatings', ascending=False, inplace=True)
+        must_see = df[df['numberOfRatings'] >= min_reviews].copy()
+        must_see.sort_values(by='numberOfRatings', ascending=False, inplace=True)
 
-        # Convert DataFrame rows to dictionaries for serialization
-        highest_rated_list = [{
+        must_see_list = [{
             "id": str(attraction["_id"]),
             "name": attraction["name"],
             "description": attraction['description'],
             "categories": attraction['categories'],
             "city": attraction['city'],
             "image": attraction.get("image", "")
-        } for attraction in highest_rated.to_dict('records')]  # Convert DataFrame to list of dicts
+        } for attraction in must_see.to_dict('records')]  # Convert DataFrame to list of dicts
 
-        most_rated_list = [{
-            "id": str(attraction["_id"]),
-            "name": attraction["name"],
-            "description": attraction['description'],
-            "categories": attraction['categories'],
-            "city": attraction['city'],
-            "image": attraction.get("image", "")
-        } for attraction in most_rated.to_dict('records')]  # Convert DataFrame to list of dicts
-
-        return JsonResponse({
-            'highest_rated': highest_rated_list,
-            'most_rated': most_rated_list
+        return JsonResponse({            
+            'must_see': must_see_list
         })
     except Exception as e:
         return JsonResponse({'message': str(e)}, status=500)
