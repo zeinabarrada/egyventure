@@ -15,7 +15,7 @@ const LikesPage = () => {
       if (!userId) return; // Ensure userId is available before fetching
       try {
         const response = await axios.get(
-          `http://127.0.0.1:8000/user_likes/?user_id=${userId}`
+          `http://127.0.0.1:8000/view_likes/?user_id=${userId}`
         );
         setLikedCards(response.data.liked_attractions || []);
       } catch (error) {
@@ -24,19 +24,6 @@ const LikesPage = () => {
     };
     fetchData();
   }, [userId]);
-
-  // const onUnlike = async (attractionId) => {
-  //   try {
-  //     await axios.delete(`http://127.0.0.1:8000/user_likes/${attractionId}/`, {
-  //       data: { user_id: userId },
-  //     });
-  //     setLikedCards((prevCards) =>
-  //       prevCards.filter((attraction) => attraction.id !== attractionId)
-  //     );
-  //   } catch (error) {
-  //     console.error("Error unliking attraction:", error);
-  //   }
-  // };
 
   return (
     <section className="recommendations-section">

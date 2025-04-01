@@ -36,24 +36,37 @@ const AttractionsSlider = ({ title, fetchUrl, userId }) => {
   }, [fetchUrl, userId]);
 
   const toggleLike = async (itemId) => {
-    setLikedItems((prev) =>
-      prev.includes(itemId)
-        ? prev.filter((id) => id !== itemId)
-        : [...prev, itemId]
-    );
+    // Determine if we're liking or unliking
+    const isLiking = !likedItems.includes(itemId);
+
+    // Optimistically update the UI first
+    const newLikedItems = isLiking
+      ? [...likedItems, itemId]
+      : likedItems.filter((id) => id !== itemId);
+    setLikedItems(newLikedItems);
+
     if (userId) {
       try {
-        await axios.post("http://127.0.0.1:8000/add_to_likes/", {
+        // Call the appropriate endpoint based on action
+        const endpoint = isLiking
+          ? "http://127.0.0.1:8000/add_to_likes/"
+          : "http://127.0.0.1:8000/remove_from_likes/";
+
+        const response = await axios.post(endpoint, {
           user_id: userId,
           attraction_id: itemId,
         });
+
+        if (!response.data.success) {
+          throw new Error(response.data.message || "Like operation failed");
+        }
       } catch (error) {
         console.error("Error updating likes:", error);
+        // Revert UI if API fails
         setLikedItems(likedItems);
       }
     }
   };
-
   const scrollLeft = () => {
     if (sliderRef.current) {
       sliderRef.current.scrollBy({
