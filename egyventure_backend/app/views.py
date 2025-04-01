@@ -105,7 +105,15 @@ def get_attractions(request):
 def get_attraction_details(request):
     if request.method == 'GET':
         try:            
-            data = json.loads(request.body)
+            # Parse request data
+            if request.content_type == 'application/json':
+                try:
+                    data = json.loads(request.body.decode('utf-8'))
+                except json.JSONDecodeError:
+                    return JsonResponse({'error': 'Invalid JSON data'}, status=400)
+            else:
+                data = request.GET
+                
             attraction_id = data.get('attraction_id')            
 
             if not attraction_id:
