@@ -3,7 +3,6 @@ import pandas as pd
 from gensim.models import Word2Vec
 from sklearn.metrics.pairwise import cosine_similarity
 from surprise import NMF, SVD, Dataset, Reader
-from django.shortcuts import render
 from django.http import JsonResponse
 from django.views.decorators.csrf import csrf_exempt
 from pymongo import MongoClient
@@ -16,6 +15,7 @@ client = MongoClient('mongodb://localhost:27017/')
 db = client['db']
 users_db = db['users']
 attractions_db = db['attractions']
+ratings_db = db['ratings']
 
 
 @csrf_exempt
@@ -560,3 +560,66 @@ def view_likes(request):
     
     except Exception as e:
         return JsonResponse({"error": f"Server error: {str(e)}"}, status=500)
+
+
+@csrf_exempt
+def rate(request):
+    try:
+        # Parse request data
+        if request.content_type == 'application/json':
+            try:
+                data = json.loads(request.body.decode('utf-8'))
+            except json.JSONDecodeError:
+                return JsonResponse({'error': 'Invalid JSON data'}, status=400)
+        else:
+            data = request.POST
+
+        # Validate required fields
+        required_fields = ['user_id', 'attraction_id', 'rating']
+        missing_fields = [field for field in required_fields if field not in data]
+        if missing_fields:
+            return JsonResponse({'error': f'Missing fields: {", ".join(missing_fields)}'}, status=400)
+
+        user_id = data['user_id']
+        attraction_id = data['attraction_id']
+        rating = data['rating']
+
+        # Validate rating value
+        try:
+            rating = float(rating)
+            if not (0 <= rating <= 5):
+                return JsonResponse({'error': 'Rating must be between 0 and 5'}, status=400)
+        except ValueError:
+            return JsonResponse({'error': 'Rating must be a number'}, status=400)
+
+        # Get user and attraction names
+        try:
+            user = users_db.find_one({"_id": ObjectId(user_id)})
+            if not user:
+                return JsonResponse({'error': 'User not found'}, status=404)
+            
+            attraction = attractions_db.find_one({"_id": ObjectId(attraction_id)})
+            if not attraction:
+                return JsonResponse({'error': 'Attraction not found'}, status=404)
+        except Exception as e:
+            return JsonResponse({'error': 'Error validating user or attraction'}, status=500)
+        
+        ratings_db.insert_one({
+            "user_id": user_id,
+            "user_name": user.get('fname', ''),
+            "attraction_id": attraction_id,
+            "attraction_name": attraction.get('name', ''),
+            "rating": rating,            
+        })
+
+        return JsonResponse({
+            'success': True,
+            'user_name': user.get('fname', ''),
+            'attraction_name': attraction.get('name', ''),
+            'rating': rating
+        }, status=201)
+
+    except Exception as e:        
+        return JsonResponse({
+            'error': 'An unexpected error occurred. Please try again later.'
+        }, status=500)
