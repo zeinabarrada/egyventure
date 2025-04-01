@@ -27,7 +27,20 @@ const AttractionsSlider = ({ title, fetchUrl, userId }) => {
           params: userId ? { id: userId } : {},
         });
         setItems(response.data.recommendations || response.data.must_see || []);
-        console.log("Backend Response:", response.data);
+        if (userId) {
+          const likesResponse = await axios.get(
+            "http://127.0.0.1:8000/view_likes/",
+            {
+              params: { user_id: userId },
+            }
+          );
+          if (likesResponse.data.success) {
+            const likedIds = likesResponse.data.attractions.map(
+              (attraction) => attraction._id
+            );
+            setLikedItems(likedIds);
+          }
+        }
       } catch (error) {
         console.error("Error fetching data:", error);
       }
