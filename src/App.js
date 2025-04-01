@@ -13,6 +13,8 @@ import { useEffect } from "react";
 import pic from "./components/icon.png";
 import "slick-carousel/slick/slick.css";
 import "slick-carousel/slick/slick-theme.css";
+import LikesList from "./components/LikesPage.js";
+import AttractionDetail from "./components/ContentBasedRec/AttractionDetail.js";
 
 function App() {
   useEffect(() => {
@@ -48,6 +50,8 @@ function App() {
             <Route path="/chooseinterests" element={<ChooseInterests />} />
             <Route path="/homepage" element={<Home />} />
             <Route path="/safetytips" element={<SafetyTips />} />
+            <Route path="/likes" element={<LikesList />} />
+            <Route path="/attractions/:id" element={<AttractionDetail />} />
           </Routes>
         </main>
       </AuthProvider>
