@@ -127,8 +127,7 @@ def get_attraction_details(request):
             return JsonResponse({'status': 'success', 'attraction': attraction}, safe=False)
 
         except Exception as e:
-            return JsonResponse({'status': 'error', 'message': str(e)}, status=500)
-    
+            return JsonResponse({'status': 'error', 'message': str(e)}, status=500)    
 
 
 @csrf_exempt
@@ -183,6 +182,7 @@ def post_interests(request):
             return JsonResponse({'status' : 'success'})
         except Exception as e:
             return JsonResponse({'status': 'error', 'message': str(e)}, status=500)
+
 
 @csrf_exempt
 def word2vec_recommendations(request):
@@ -249,7 +249,7 @@ def word2vec_recommendations(request):
         recommendations = [{
             "id": str(attraction['_id']),
             "name": attraction['name'], 
-            "descriptions":attraction['description'],            
+            "description":attraction['description'],            
             "categories": attraction['categories'],
             "city": attraction['city'],        
             "image":attraction['image'],
@@ -479,6 +479,7 @@ def add_to_likes(request):
     except Exception as e:
         return JsonResponse({"error": f"Server error: {str(e)}"}, status=500)
 
+
 @csrf_exempt
 def remove_from_likes(request):
     try:        
@@ -512,5 +513,44 @@ def remove_from_likes(request):
             "success": True,
             "user": str(updated_user)
         }, status=200)
+    except Exception as e:
+        return JsonResponse({"error": f"Server error: {str(e)}"}, status=500)
+
+
+@csrf_exempt
+def view_likes(request):
+    try:
+        if request.method != 'GET':
+            return JsonResponse({"error": "Only GET method is allowed"}, status=405)
+        
+        if 'application/json' in request.content_type:
+            try:
+                data = json.loads(request.body.decode('utf-8'))
+            except json.JSONDecodeError:
+                return JsonResponse({'error': 'Invalid JSON data'}, status=400)
+        else:
+            data = request.GET
+        
+        user_id = data.get('user_id')
+
+        if not user_id:
+            return JsonResponse({"error": "user_id is required"}, status=400)
+        
+        user_oid = ObjectId(user_id)
+        user = users_db.find_one({'_id': user_oid}, {'attraction_ids': 1})
+        
+        if not user:
+            return JsonResponse({"error": "User not found"}, status=404)
+        
+        attraction_ids = user.get('attraction_ids', [])
+        
+        # Convert ObjectId to strings for JSON serialization
+        attraction_ids_str = [str(attraction_id) for attraction_id in attraction_ids]
+        
+        return JsonResponse({
+            "success": True,
+            "attraction_ids": attraction_ids_str
+        }, status=200)
+    
     except Exception as e:
         return JsonResponse({"error": f"Server error: {str(e)}"}, status=500)
