@@ -106,8 +106,7 @@ def get_attraction_details(request):
     if request.method == 'GET':
         try:            
             data = json.loads(request.body)
-            attraction_id = data.get('id')
-            
+            attraction_id = data.get('attraction_id')            
 
             if not attraction_id:
                 return JsonResponse({'status': 'error', 'message': 'Attraction ID is required.'}, status=400)
