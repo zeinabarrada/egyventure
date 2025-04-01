@@ -102,8 +102,8 @@ def get_attractions(request):
 
 
 @csrf_exempt
-def get_attraction(request):
-    if request.method == 'POST':
+def get_attraction_details(request):
+    if request.method == 'GET':
         try:            
             data = json.loads(request.body)
             attraction_id = data.get('id')
@@ -128,8 +128,7 @@ def get_attraction(request):
 
         except Exception as e:
             return JsonResponse({'status': 'error', 'message': str(e)}, status=500)
-    else:        
-        return render(request, 'get_attraction.html')
+    
 
 
 @csrf_exempt
