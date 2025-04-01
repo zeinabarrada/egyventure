@@ -479,3 +479,39 @@ def add_to_likes(request):
         }, status=200)
     except Exception as e:
         return JsonResponse({"error": f"Server error: {str(e)}"}, status=500)
+
+@csrf_exempt
+def remove_from_likes(request):
+    try:        
+        if 'application/json' in request.content_type:
+            try:
+                data = json.loads(request.body.decode('utf-8'))
+            except json.JSONDecodeError:
+                return JsonResponse({'error': 'Invalid JSON data'}, status=400)
+        else:
+            data = request.POST
+
+        user_id = data.get('user_id')
+        attraction_id = data.get('attraction_id')
+
+        if not user_id or not attraction_id:
+            return JsonResponse({"messages": "Both user_id and attraction_id are required"}, status=400)
+        
+        user_oid = ObjectId(user_id)
+        attraction_oid = ObjectId(attraction_id)
+
+        updated_user = users_db.find_one_and_update(
+            {'_id': user_oid},
+            {"$pull": {"attraction_ids": attraction_oid}},
+            return_document=True
+        )
+                
+        if not updated_user:
+            return JsonResponse({"message": "User not found"}, status=404)
+        
+        return JsonResponse({
+            "success": True,
+            "user": str(updated_user)
+        }, status=200)
+    except Exception as e:
+        return JsonResponse({"error": f"Server error: {str(e)}"}, status=500)
