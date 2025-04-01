@@ -1,8 +1,9 @@
 import "./Navigation.css";
-import { Link } from "react-router-dom";
+import { Link, useNavigate } from "react-router-dom";
 import { useAuth } from "../Registration/AuthContext";
 import defaultAvatar from "./defaultAvatar.jpg";
 import { useState, useEffect, useRef } from "react";
+import LikesList from "../LikesPage";
 
 export default function Navigation() {
   const { isAuthenticated, logout, user } = useAuth();
@@ -15,7 +16,7 @@ export default function Navigation() {
       section.scrollIntoView({ behavior: "smooth", block: "start" });
     }
   };
-
+  const navigate = useNavigate();
   // Close dropdown when clicking outside
   useEffect(() => {
     const handleClickOutside = (event) => {
@@ -92,7 +93,7 @@ export default function Navigation() {
             <button
               className="dropdown-item"
               onClick={() => {
-                logout();
+                navigate("/likes");
                 setIsDropdownOpen(false);
               }}
             >
