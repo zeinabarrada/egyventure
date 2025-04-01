@@ -102,40 +102,41 @@ def get_attractions(request):
 
 
 @csrf_exempt
-def get_attraction_details(request):
-    if request.method == 'GET':
-        try:            
-            # Parse request data
-            if request.content_type == 'application/json':
-                try:
-                    data = json.loads(request.body.decode('utf-8'))
-                except json.JSONDecodeError:
-                    return JsonResponse({'error': 'Invalid JSON data'}, status=400)
-            else:
-                data = request.GET
-                
-            attraction_id = data.get('attraction_id')            
+def get_attraction_details(request):    
+    try:            
+        # Parse request data
+        if request.content_type == 'application/json':
+            try:
+                data = json.loads(request.body.decode('utf-8'))
+            except json.JSONDecodeError:
+                return JsonResponse({'error': 'Invalid JSON data'}, status=400)
+        elif request.method == 'GET':
+            data = request.GET
+        elif request.method == 'POST':
+            data = request.POST
 
-            if not attraction_id:
-                return JsonResponse({'status': 'error', 'message': 'Attraction ID is required.'}, status=400)
+        attraction_id = data.get('attraction_id')            
 
-            # Convert the ID to ObjectId
-            attraction_id = ObjectId(attraction_id)
+        if not attraction_id:
+            return JsonResponse({'status': 'error', 'message': 'Attraction ID is required.'}, status=400)
 
-            # Find the attraction by its ID
-            attraction = attractions_db.find_one({'_id': attraction_id})
+        # Convert the ID to ObjectId
+        attraction_id = ObjectId(attraction_id)
 
-            if not attraction:
-                return JsonResponse({'status': 'error', 'message': 'Attraction not found.'}, status=404)
+        # Find the attraction by its ID
+        attraction = attractions_db.find_one({'_id': attraction_id})
 
-            # Convert ObjectId to string
-            attraction['_id'] = str(attraction['_id'])
+        if not attraction:
+            return JsonResponse({'status': 'error', 'message': 'Attraction not found.'}, status=404)
 
-            # Return the attraction in a JsonResponse
-            return JsonResponse({'status': 'success', 'attraction': attraction}, safe=False)
+        # Convert ObjectId to string
+        attraction['_id'] = str(attraction['_id'])
 
-        except Exception as e:
-            return JsonResponse({'status': 'error', 'message': str(e)}, status=500)    
+        # Return the attraction in a JsonResponse
+        return JsonResponse({'status': 'success', 'attraction': attraction}, safe=False)
+
+    except Exception as e:
+        return JsonResponse({'status': 'error', 'message': str(e)}, status=500)    
 
 
 @csrf_exempt
