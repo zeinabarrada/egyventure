@@ -107,6 +107,7 @@ def get_attraction_details(request):
         try:            
             data = json.loads(request.body)
             attraction_id = data.get('id')
+            
 
             if not attraction_id:
                 return JsonResponse({'status': 'error', 'message': 'Attraction ID is required.'}, status=400)
@@ -544,12 +545,17 @@ def view_likes(request):
         
         attraction_ids = user.get('attraction_ids', [])
         
-        # Convert ObjectId to strings for JSON serialization
-        attraction_ids_str = [str(attraction_id) for attraction_id in attraction_ids]
-        
+        # Fetch full details for each attraction
+        attractions = []
+        for attraction_id in attraction_ids:
+            attraction = attractions_db.find_one({'_id': attraction_id})
+            if attraction:
+                attraction['_id'] = str(attraction['_id'])
+                attractions.append(attraction)
+
         return JsonResponse({
             "success": True,
-            "attraction_ids": attraction_ids_str
+            "attractions": attractions
         }, status=200)
     
     except Exception as e:
