@@ -15,6 +15,7 @@ urlpatterns = [
     path('view_likes/', views.view_likes, name='view_likes'),
     path('rate/', views.rate, name='rate'),
     path('post_interests/', views.post_interests, name='post_interests'),
+    path('view_ratings/', views.view_ratings, name='view_ratings'),
     
     path('word2vec/', views.word2vec_recommendations, name='word2vec'),
     path('pearson_similarity/', views.pearson_similarity, name='pearson_similarity'),

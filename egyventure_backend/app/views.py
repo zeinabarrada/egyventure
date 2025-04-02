@@ -734,3 +734,52 @@ def pearson_similarity(request):
     
     except Exception as e:
         return JsonResponse({'error': str(e)}, status=500)
+
+
+@csrf_exempt
+
+def view_ratings(request):
+    if request.content_type == 'application/json':
+        try:
+            data = json.loads(request.body.decode('utf-8'))
+        except json.JSONDecodeError:
+            return JsonResponse({'error': 'Invalid JSON data'}, status=400)
+    elif request.method == 'GET':
+        data = request.GET
+    elif request.method == 'POST':
+        data = request.POST
+    user_id = data['user_id']
+    try:
+        # Validate user_id format
+        try:
+            user_object_id = ObjectId(user_id)
+        except:
+            return JsonResponse({'error': 'Invalid user ID format'}, status=400)
+
+        # Check if user exists
+        user = users_db.find_one({'_id': user_object_id})
+        if not user:
+            return JsonResponse({'error': 'User not found'}, status=404)
+
+        # Get all ratings for the user
+        ratings = list(ratings_db.find(
+            {'user_id': user_id},
+            {'_id': 0, 'user_id': 0}  # Exclude these fields from response
+        ))
+
+        # Convert ObjectId fields to strings in the attractions
+        for rating in ratings:
+            if 'attraction_id' in rating:
+                rating['attraction_id'] = str(rating['attraction_id'])
+
+        response_data = {
+            'user_id': user_id,
+            'user_name': user.get('fname', ''),
+            'total_ratings': len(ratings),
+            'ratings': ratings
+        }
+
+        return JsonResponse(response_data)
+
+    except Exception as e:
+        return JsonResponse({'error': str(e)}, status=500)
