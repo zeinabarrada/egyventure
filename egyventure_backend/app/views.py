@@ -60,41 +60,39 @@ def signup(request):
 
 
 @csrf_exempt
-def login(request):
-    if request.method == 'POST':
-        try:                        
-            data = json.loads(request.body)  
+def login(request):    
+    try:                        
+        data = json.loads(request.body)  
 
-            email = data['email']
-            password = data['password']            
+        email = data['email']
+        password = data['password']            
 
-            user = users_db.find_one({'email': email})            
+        user = users_db.find_one({'email': email})            
 
-            if user:                
-                if  password == user['password']:
-                    return JsonResponse(
-                        {
-                        'success':True,
-                        'message': 'Login successful!',
-                        'user_id': str(user['_id']), 
-                        'name': str(user['fname'])
-                        }, status=200)
-                else:
-                    return JsonResponse({'error': 'Invalid username or password.'}, status=401)
+        if user:                
+            if  password == user['password']:
+                return JsonResponse(
+                    {
+                    'success':True,
+                    'message': 'Login successful!',
+                    'user_id': str(user['_id']), 
+                    'name': str(user['fname'])
+                    }, status=200)
             else:
-                return JsonResponse({'error': 'User not found.'}, status=404)
+                return JsonResponse({'error': 'Invalid username or password.'}, status=401)
+        else:
+            return JsonResponse({'error': 'User not found.'}, status=404)
 
-        except KeyError as e:
-            return JsonResponse({'error': f'Missing field: {str(e)}'}, status=400)
-        except Exception as e:
-            return JsonResponse({'error': f'An error occurred: {str(e)}'}, status=500)
+    except KeyError as e:
+        return JsonResponse({'error': f'Missing field: {str(e)}'}, status=400)
+    except Exception as e:
+        return JsonResponse({'error': f'An error occurred: {str(e)}'}, status=500)
 
 
 @csrf_exempt
 def get_attractions(request):
     attractions = list(attractions_db.find({}))
-
-    # Convert ObjectId to string in each document
+    
     for doc in attractions:
         doc['_id'] = str(doc['_id'])
 
@@ -141,32 +139,27 @@ def get_attraction_details(request):
 
 
 @csrf_exempt
-def get_user(request):
-    if request.method == 'GET':
-        try:            
-            data = json.loads(request.body)
-            user_id = data.get('id')
+def get_user(request):    
+    try:            
+        data = json.loads(request.body)
+        user_id = data.get('user_id')
 
-            if not user_id:
-                return JsonResponse({'status': 'error', 'message': 'User ID is required.'}, status=400)
+        if not user_id:
+            return JsonResponse({'status': 'error', 'message': 'User ID is required.'}, status=400)
+        
+        user_id = ObjectId(user_id)
+        
+        user = users_db.find_one({'_id': user_id})
 
-            # Convert the ID to ObjectId
-            user_id = ObjectId(user_id)
+        if not user:
+            return JsonResponse({'status': 'error', 'message': 'User not found.'}, status=404)
+    
+        user['_id'] = str(user['_id'])
+        
+        return JsonResponse({'status': 'success', 'user': user}, safe=False)
 
-            # Find the attraction by its ID
-            user = users_db.find_one({'_id': user_id})
-
-            if not user:
-                return JsonResponse({'status': 'error', 'message': 'User not found.'}, status=404)
-
-            # Convert ObjectId to string
-            user['_id'] = str(user['_id'])
-
-            # Return the attraction in a JsonResponse
-            return JsonResponse({'status': 'success', 'user': user}, safe=False)
-
-        except Exception as e:
-            return JsonResponse({'status': 'error', 'message': str(e)}, status=500)
+    except Exception as e:
+        return JsonResponse({'status': 'error', 'message': str(e)}, status=500)
 
 
 @csrf_exempt
@@ -174,7 +167,7 @@ def post_interests(request):
     if request.method =='POST':
         try:
             data = json.loads(request.body)
-            user_id = data.get('id')            
+            user_id = data.get('user_id')
             interests = data.get('interests')            
 
             if not user_id:
@@ -196,12 +189,27 @@ def post_interests(request):
 
 @csrf_exempt
 def word2vec_recommendations(request):
-    try:        
-        id = request.GET.get('id')
+    try:
+        # Parse request data
+        if request.content_type == 'application/json':
+            try:
+                data = json.loads(request.body.decode('utf-8'))
+            except json.JSONDecodeError:
+                return JsonResponse({'error': 'Invalid JSON data'}, status=400)
+        elif request.method == 'GET':
+            data = request.GET
+        elif request.method == 'POST':
+            data = request.POST        
+        
+        user_id = data['user_id']
         
         # 1. Get user data
-        user_id = ObjectId(id)
-        user = db.users.find_one({'_id': user_id})
+        user_oid = ObjectId(user_id)
+        user = users_db.find_one({'_id': user_oid})
+        
+        if not user:
+            return JsonResponse({"error": "user not found"})
+        
         interests = user['interests']  # "sights & landmarks, sacred & religious sites"
         
         # 2. Get attractions from MongoDB
@@ -280,11 +288,10 @@ def NMF_SVD(request):
     """Recommend attractions while strictly excluding already rated ones."""
     try:
         # Get and validate user ID
-        user_id = request.GET.get("id")
+        user_id = request.GET.get("user_id")
         if not user_id:
             return JsonResponse({"error": "User ID is required."}, status=400)
-
-        # Convert to ObjectId
+        
         try:
             user_oid = ObjectId(user_id)
         except:
@@ -737,7 +744,6 @@ def pearson_similarity(request):
 
 
 @csrf_exempt
-
 def view_ratings(request):
     if request.content_type == 'application/json':
         try:
