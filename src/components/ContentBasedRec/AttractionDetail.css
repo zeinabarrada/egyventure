@@ -229,3 +229,86 @@
   background-color: #cccccc;
   cursor: not-allowed;
 }
+/* Previous Rating Styles */
+/* Previous Rating Styles */
+.previous-rating {
+  background-color: #f8f9fa;
+  padding: 1rem;
+  border-radius: 8px;
+  margin-top: 1rem;
+}
+
+.rated-stars {
+  display: flex;
+  gap: 0.3rem;
+  margin: 0.5rem 0;
+}
+
+.star.rated {
+  color: #ffc107;
+  font-size: 1.5rem;
+}
+
+.star.rated-empty {
+  color: #e0e0e0;
+  font-size: 1.5rem;
+}
+
+.rating-message {
+  color: #4caf50;
+  font-style: italic;
+  margin-top: 0.5rem;
+}
+
+/* Rating Input Styles */
+.rating-input {
+  background-color: #f8f9fa;
+  padding: 1rem;
+  border-radius: 8px;
+  margin-top: 1rem;
+}
+
+.stars-input {
+  display: flex;
+  gap: 0.5rem;
+  margin: 0.5rem 0;
+}
+
+.star.interactive {
+  cursor: pointer;
+  font-size: 1.5rem;
+  transition: all 0.2s;
+}
+
+.star.interactive.full {
+  color: #ffc107;
+}
+
+.star.interactive.empty {
+  color: #e0e0e0;
+}
+
+.star.interactive:hover {
+  transform: scale(1.2);
+}
+
+.submit-rating-button {
+  background-color: #4caf50;
+  color: white;
+  border: none;
+  padding: 0.5rem 1rem;
+  border-radius: 4px;
+  cursor: pointer;
+  margin-top: 0.5rem;
+}
+
+.submit-rating-button:disabled {
+  background-color: #cccccc;
+  cursor: not-allowed;
+}
+
+.rating-notice {
+  color: #666;
+  font-style: italic;
+  margin-top: 1rem;
+}

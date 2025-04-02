@@ -17,6 +17,7 @@ const AttractionDetail = () => {
   const [userRating, setUserRating] = useState(0);
   const [hoverRating, setHoverRating] = useState(0);
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const [hasRated, setHasRated] = useState(false);
   const { user } = useAuth();
   const userId = user?.id;
 
@@ -30,21 +31,34 @@ const AttractionDetail = () => {
           }
         );
 
-        // Check if the response contains the expected data
         if (response.data.status === "success") {
           setAttraction(response.data.attraction);
         } else {
           throw new Error(response.data.message || "Invalid data received");
+        }
+        if (userId) {
+          const response = await axios.get(
+            `http://127.0.0.1:8000/view_ratings/`,
+            {
+              params: { user_id: userId, attraction_id: id },
+            }
+          );
+
+          if (response.status === 200 || response.data.status === "success") {
+            setHasRated(true);
+          } else {
+            throw new Error(response.data.message || "Invalid data received");
+          }
         }
       } catch (error) {
         console.error("Error fetching attraction:", error);
       }
     };
     fetchAttraction();
-  }, [id]);
+  }, [id, userId]);
 
   const handleRatingSubmit = async () => {
-    if (userRating === 0) return; // Don't submit if no rating selected
+    if (userRating === 0 || hasRated) return; // Don't submit if no rating selected
 
     setIsSubmitting(true);
     try {
@@ -71,6 +85,25 @@ const AttractionDetail = () => {
   };
 
   const renderRatingInput = () => {
+    if (hasRated) {
+      return (
+        <div className="previous-rating">
+          <h3>Your Rating:</h3>
+          <div className="rated-stars">
+            {[1, 2, 3, 4, 5].map((star) => (
+              <span key={`rated-${star}`}>
+                {star <= userRating ? (
+                  <FaStar className="star rated" />
+                ) : (
+                  <FaRegStar className="star rated-empty" />
+                )}
+              </span>
+            ))}
+          </div>
+          <p className="rating-message">Thank you for your rating!</p>
+        </div>
+      );
+    }
     return (
       <div className="rating-input">
         <h3>Rate this attraction:</h3>
