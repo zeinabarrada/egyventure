@@ -1,3 +1,4 @@
+from collections import defaultdict
 import numpy as np
 import pandas as pd
 from gensim.models import Word2Vec
@@ -118,7 +119,7 @@ def get_attraction_details(request):
         attraction_id = data.get('attraction_id')            
 
         if not attraction_id:
-            return JsonResponse({'status': 'error', 'message': 'Attraction ID is required.'}, status=400)
+            return JsonResponse({'status': 'error', 'message': 'attraction ID is required.'}, status=400)
 
         # Convert the ID to ObjectId
         attraction_id = ObjectId(attraction_id)
@@ -127,7 +128,7 @@ def get_attraction_details(request):
         attraction = attractions_db.find_one({'_id': attraction_id})
 
         if not attraction:
-            return JsonResponse({'status': 'error', 'message': 'Attraction not found.'}, status=404)
+            return JsonResponse({'status': 'error', 'message': 'ttraction not found.'}, status=404)
 
         # Convert ObjectId to string
         attraction['_id'] = str(attraction['_id'])
@@ -474,7 +475,7 @@ def add_to_likes(request):
 
         updated_user = users_db.find_one_and_update(
             {'_id':user_oid},
-            {"$addToSet": {"attraction_ids": attraction_oid}},
+            {"$addToSet": {"likes": attraction_oid}},
                 return_document=True
             )
                 
@@ -511,7 +512,7 @@ def remove_from_likes(request):
 
         updated_user = users_db.find_one_and_update(
             {'_id': user_oid},
-            {"$pull": {"attraction_ids": attraction_oid}},
+            {"$pull": {"likes": attraction_oid}},
             return_document=True
         )
                 
@@ -546,16 +547,16 @@ def view_likes(request):
             return JsonResponse({"error": "user_id is required"}, status=400)
         
         user_oid = ObjectId(user_id)
-        user = users_db.find_one({'_id': user_oid}, {'attraction_ids': 1})
+        user = users_db.find_one({'_id': user_oid}, {'likes': 1})
         
         if not user:
             return JsonResponse({"error": "User not found"}, status=404)
         
-        attraction_ids = user.get('attraction_ids', [])
+        likes_ids = user.get('likes', [])
         
         # Fetch full details for each attraction
         attractions = []
-        for attraction_id in attraction_ids:
+        for attraction_id in likes_ids:
             attraction = attractions_db.find_one({'_id': attraction_id})
             if attraction:
                 attraction['_id'] = str(attraction['_id'])
@@ -631,3 +632,105 @@ def rate(request):
         return JsonResponse({
             'error': 'An unexpected error occurred. Please try again later.'
         }, status=500)
+
+
+@csrf_exempt
+def pearson_similarity(request):     
+    # Parse request data
+    if request.content_type == 'application/json':
+        try:
+            data = json.loads(request.body.decode('utf-8'))
+        except json.JSONDecodeError:
+            return JsonResponse({'error': 'Invalid JSON data'}, status=400)
+    elif request.method == 'GET':
+        data = request.GET
+    elif request.method == 'POST':
+        data = request.POST
+
+    try:
+        # Get target_user from request parameters
+        target_user_id = data['user_id']
+        
+        # Fetch ratings from MongoDB
+        ratings = ratings_db.find({}, {'user_id': 1, 'attraction_id': 1, 'rating': 1, '_id': 0})
+        ratings = list(ratings)
+
+        if not ratings:
+            return JsonResponse({'error': 'No ratings found in database'}, status=404)
+        
+        # Create user-item matrix        
+        df = pd.DataFrame(ratings)
+        user_item_matrix = df.pivot(index='user_id', columns='attraction_id', values='rating')
+        
+        if user_item_matrix.empty:
+            return JsonResponse({'error': 'No data available to process'}, status=404)
+        
+        # Check if target user exists
+        if target_user_id not in user_item_matrix.index:
+            return JsonResponse({'error': f'Target user {target_user_id} not found'}, status=404)
+        
+        # Compute user similarities using Pearson correlation
+        user_similarity_df = user_item_matrix.T.corr(method='pearson').fillna(0)
+        
+        # Extract similarities for the target user
+        target_similarities = user_similarity_df.loc[target_user_id]
+        
+        # Exclude target user and filter out non-positive similarities
+        similar_users = target_similarities.drop(target_user_id).to_dict()
+        similar_users = {user: sim for user, sim in similar_users.items() if sim > 0}
+        
+        if not similar_users:
+            return JsonResponse({'error': f'No similar users found for {target_user_id}'}, status=404)
+        
+        # Identify attractions the target hasn't rated
+        target_rated = user_item_matrix.loc[target_user_id].dropna().index
+        all_attractions = user_item_matrix.columns
+        target_unrated = [att for att in all_attractions if att not in target_rated]
+        
+        # Calculate weighted scores for each unrated attraction
+        attraction_scores = defaultdict(float)
+        
+        for attraction in target_unrated:
+            total_score = 0.0
+            total_weight = 0.0
+            for user, similarity in similar_users.items():
+                user_rating = user_item_matrix.loc[user, attraction]
+                if not pd.isna(user_rating):
+                    total_score += user_rating * similarity
+                    total_weight += similarity
+            if total_weight > 0:
+                attraction_scores[attraction] = total_score / total_weight
+        
+        if not attraction_scores:
+            return JsonResponse({'error': 'No recommendations available'}, status=404)
+        
+        # Sort attractions by their weighted score in descending order
+        sorted_recommendations = sorted(attraction_scores.items(), key=lambda x: -x[1])
+        recommendations = [ObjectId(attraction) for attraction, _ in sorted_recommendations]
+        
+        # Select top 5 recommendations
+        top_recommendations = recommendations[:5]
+        
+        # Get user and attraction details for response
+        user = users_db.find_one({"_id": ObjectId(target_user_id)})
+        attraction_details = []
+        
+        for attraction_id in top_recommendations:
+            attraction = attractions_db.find_one({"_id": attraction_id})
+            if attraction:
+                attraction_details.append({
+                    'id': str(attraction['_id']),
+                    'name': attraction.get('name', ''),
+                    # Add other relevant attraction fields as needed
+                })
+        
+        response_data = {
+            'user_id': target_user_id,
+            'user_name': user.get('fname', '') if user else '',
+            'recommendations': attraction_details
+        }
+        
+        return JsonResponse(response_data)
+    
+    except Exception as e:
+        return JsonResponse({'error': str(e)}, status=500)
