@@ -24,8 +24,9 @@ const AttractionsSlider = ({ title, fetchUrl, userId }) => {
     const fetchData = async () => {
       try {
         const response = await axios.get(fetchUrl, {
-          params: userId ? { id: userId } : {},
+          params: userId ? { user_id: userId } : {},
         });
+        console.log(likedItems);
         setItems(response.data.recommendations || response.data.must_see || []);
         if (userId) {
           const likesResponse = await axios.get(
@@ -35,10 +36,10 @@ const AttractionsSlider = ({ title, fetchUrl, userId }) => {
             }
           );
           if (likesResponse.data.success) {
-            const likedIds = likesResponse.data.attractions.map(
-              (attraction) => attraction._id
+            const newLikedIds = likesResponse.data.attractions.map(
+              (a) => a._id || a.attraction_id
             );
-            setLikedItems(likedIds);
+            setLikedItems(newLikedIds); // Ensure state updates
           }
         }
       } catch (error) {
@@ -49,34 +50,67 @@ const AttractionsSlider = ({ title, fetchUrl, userId }) => {
   }, [fetchUrl, userId]);
 
   const toggleLike = async (itemId) => {
-    // Determine if we're liking or unliking
-    const isLiking = !likedItems.includes(itemId);
+    // Get the complete item to ensure we have all ID fields
+    const item = items.find(
+      (item) =>
+        item.id === itemId ||
+        item.attraction_id === itemId ||
+        item._id === itemId
+    );
 
-    // Optimistically update the UI first
-    const newLikedItems = isLiking
-      ? [...likedItems, itemId]
-      : likedItems.filter((id) => id !== itemId);
-    setLikedItems(newLikedItems);
+    // Use the most specific ID available
+    const attractionId = item?.attraction_id || item?._id || itemId;
+
+    console.log("Toggling like for:", {
+      receivedId: itemId,
+      resolvedId: attractionId,
+      itemFound: !!item,
+    });
+
+    const isLiking = !likedItems.includes(attractionId);
+    const prevLikedItems = [...likedItems];
+
+    // Optimistic UI update
+    setLikedItems(
+      isLiking
+        ? [...likedItems, attractionId]
+        : likedItems.filter((id) => id !== attractionId)
+    );
 
     if (userId) {
       try {
-        // Call the appropriate endpoint based on action
         const endpoint = isLiking
           ? "http://127.0.0.1:8000/add_to_likes/"
           : "http://127.0.0.1:8000/remove_from_likes/";
 
         const response = await axios.post(endpoint, {
           user_id: userId,
-          attraction_id: itemId,
+          attraction_id: attractionId, // Always use the resolved ID
         });
+        if (response.data.success && response.data.user) {
+          // Force refresh liked items from backend
+          const likesResponse = await axios.get(
+            "http://127.0.0.1:8000/view_likes/",
+            {
+              params: { user_id: userId },
+            }
+          );
+          if (likesResponse.data.success) {
+            const newLikedIds = likesResponse.data.attractions.map(
+              (a) => a._id || a.attraction_id
+            );
+            setLikedItems(newLikedIds);
+          }
+        }
 
         if (!response.data.success) {
-          throw new Error(response.data.message || "Like operation failed");
+          throw new Error(response.data.message);
         }
+
+        console.log("Like operation successful:", response.data);
       } catch (error) {
-        console.error("Error updating likes:", error);
-        // Revert UI if API fails
-        setLikedItems(likedItems);
+        console.error("Like operation failed:", error);
+        setLikedItems(prevLikedItems); // Revert on error
       }
     }
   };
@@ -145,25 +179,50 @@ const AttractionsSlider = ({ title, fetchUrl, userId }) => {
             {items.length > 0 ? (
               items.map((item) => (
                 <article
-                  key={item.id}
+                  key={item.id || item.attraction_id}
                   className="recommendation-card"
-                  onClick={() => navigate(`/attractions/${item.id}`)}
+                  onClick={() => {
+                    navigate(
+                      `/attractions/${
+                        item.attraction_id || item._id || item.id
+                      }`
+                    );
+                  }}
                 >
                   <div className="card-media">
                     <img src={item.image} alt={item.name} loading="lazy" />
                     <button
                       className={`like-btn ${
-                        likedItems.includes(item.id) ? "liked" : ""
+                        likedItems.includes(
+                          item.attraction_id || item._id || item.id
+                        )
+                          ? "liked"
+                          : ""
                       }`}
                       onClick={(e) => {
+                        e.preventDefault();
                         e.stopPropagation();
-                        toggleLike(item.id);
+                        console.log("Like button clicked for item:", item); // Debug
+
+                        // Use the most specific ID available
+                        const attractionId =
+                          item.attraction_id || item._id || item.id;
+                        console.log("Using attractionId:", attractionId); // Debug
+
+                        toggleLike(attractionId).catch(console.error);
                       }}
+                      style={{ pointerEvents: "auto" }} // Force clickability
                       aria-label={
-                        likedItems.includes(item.id) ? "Unlike" : "Like"
+                        likedItems.includes(
+                          item.attraction_id || item._id || item.id
+                        )
+                          ? "Unlike"
+                          : "Like"
                       }
                     >
-                      {likedItems.includes(item.id) ? (
+                      {likedItems.includes(
+                        item.attraction_id || item._id || item.id
+                      ) ? (
                         <FaHeart />
                       ) : (
                         <FaRegHeart />

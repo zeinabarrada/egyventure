@@ -265,7 +265,7 @@ def word2vec_recommendations(request):
         recommended_ids = [str(oid) for oid in recommended_attractions]
         
         recommendations = [{
-            "id": str(attraction['_id']),
+            "attraction_id": str(attraction['_id']),
             "name": attraction['name'], 
             "description":attraction['description'],            
             "categories": attraction['categories'],
@@ -435,6 +435,7 @@ def NMF_SVD(request):
 @csrf_exempt
 def get_must_see(request):
     try:
+        
         rating_threshold = 4
         min_reviews = 1000
 
@@ -445,7 +446,7 @@ def get_must_see(request):
         must_see.sort_values(by='numberOfRatings', ascending=False, inplace=True)
 
         must_see_list = [{
-            "id": str(attraction["_id"]),
+            "attraction_id": str(attraction["_id"]),
             "name": attraction["name"],
             "description": attraction['description'],
             "categories": attraction['categories'],

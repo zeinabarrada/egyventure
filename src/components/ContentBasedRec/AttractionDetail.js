@@ -24,30 +24,38 @@ const AttractionDetail = () => {
   useEffect(() => {
     const fetchAttraction = async () => {
       try {
-        const response = await axios.get(
+        // Fetch attraction details
+        const attractionResponse = await axios.get(
           `http://127.0.0.1:8000/get_attraction_details/`,
-          {
-            params: { attraction_id: id },
-          }
+          { params: { attraction_id: id } }
         );
 
-        if (response.data.status === "success") {
-          setAttraction(response.data.attraction);
+        if (attractionResponse.data.status === "success") {
+          setAttraction(attractionResponse.data.attraction);
         } else {
-          throw new Error(response.data.message || "Invalid data received");
-        }
-        if (userId) {
-          const response = await axios.get(
-            `http://127.0.0.1:8000/view_ratings/`,
-            {
-              params: { user_id: userId, attraction_id: id },
-            }
+          throw new Error(
+            attractionResponse.data.message || "Invalid data received"
           );
+        }
 
-          if (response.status === 200 || response.data.status === "success") {
-            setHasRated(true);
-          } else {
-            throw new Error(response.data.message || "Invalid data received");
+        // Check if user has rated THIS specific attraction
+        if (userId) {
+          const ratingsResponse = await axios.get(
+            `http://127.0.0.1:8000/view_ratings/`,
+            { params: { user_id: userId } }
+          );
+          console.log(ratingsResponse.data);
+          if (ratingsResponse.data.ratings) {
+            // Find if this attraction exists in user's ratings
+            const attractionRating = ratingsResponse.data.ratings.find(
+              (rating) => String(rating.attraction_id) === String(id)
+            );
+            console.log("Found rating for this attraction:", attractionRating); // Debug log
+
+            if (attractionRating) {
+              setUserRating(attractionRating.rating);
+              setHasRated(true);
+            }
           }
         }
       } catch (error) {
@@ -56,7 +64,6 @@ const AttractionDetail = () => {
     };
     fetchAttraction();
   }, [id, userId]);
-
   const handleRatingSubmit = async () => {
     if (userRating === 0 || hasRated) return; // Don't submit if no rating selected
 
@@ -68,10 +75,12 @@ const AttractionDetail = () => {
         attraction_id: id,
         rating: userRating,
       });
-
-      if (response.data.status === "success") {
-        // Update the attraction with new average rating if needed
-        // You might want to refetch the attraction data or update locally
+      const isSuccess =
+        response.status === 200 ||
+        response.data?.success ||
+        response.data?.status === "success";
+      if (isSuccess) {
+        setHasRated(true);
         alert("Rating submitted successfully!");
       } else {
         throw new Error(response.data.message || "Failed to submit rating");
