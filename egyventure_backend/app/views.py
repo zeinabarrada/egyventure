@@ -1,3 +1,4 @@
+from django.conf import settings
 from collections import defaultdict
 import numpy as np
 import pandas as pd
@@ -7,10 +8,12 @@ from surprise import NMF, SVD, Dataset, Reader
 from django.http import JsonResponse
 from django.views.decorators.csrf import csrf_exempt
 from pymongo import MongoClient
-from bson import ObjectId
+from bson import ObjectId, json_util
 import json
+import re
 from sklearn.metrics import f1_score, precision_score, recall_score, accuracy_score
 
+""" Remove these lines to the beginning of each view, and close client after use """
 
 client = MongoClient('mongodb://localhost:27017/')
 db = client['db']
@@ -281,8 +284,8 @@ def word2vec_recommendations(request):
         
     except Exception as e:
         return JsonResponse({"error": str(e)}, status=500)
-    
-    
+
+
 @csrf_exempt
 def NMF_SVD(request):
     """Recommend attractions while strictly excluding already rated ones."""
@@ -788,5 +791,43 @@ def view_ratings(request):
 
         return JsonResponse(response_data)
 
+    except Exception as e:
+        return JsonResponse({'error': str(e)}, status=500)
+
+
+@csrf_exempt
+def filter_city(request):
+    if request.content_type == 'application/json':
+            try:
+                data = json.loads(request.body.decode('utf-8'))
+            except json.JSONDecodeError:
+                return JsonResponse({'error': 'Invalid JSON data'}, status=400)
+            
+    elif request.method == 'GET':
+        data = request.GET
+        
+    elif request.method == 'POST':
+        data = request.POST
+
+    location = data['city']
+    
+    if not location:
+        return JsonResponse({'error': 'Location parameter is required'}, status=400)
+    
+    try:
+        # Normalize the search query
+        normalized_query = re.sub(r'[,\s]+', ' ', location.lower().strip())
+        
+        # Create a regex pattern that matches variations
+        regex_pattern = '.*' + '.*'.join(normalized_query.split()) + '.*'
+        
+        attractions = list(attractions_db.find({
+            'city': {'$regex': regex_pattern, '$options': 'i'}
+            }))
+                    
+        attractions_json = json.loads(json_util.dumps(attractions))
+        
+        return JsonResponse({'attractions': attractions_json}, safe=False)
+        
     except Exception as e:
         return JsonResponse({'error': str(e)}, status=500)
