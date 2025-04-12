@@ -383,3 +383,56 @@
 .read-more-btn:hover {
   text-decoration: underline;
 }
+/* Add to your existing CSS */
+.section-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 1rem;
+}
+
+.view-all-btn {
+  background: none;
+  border: none;
+  color: #d4a017;
+  font-weight: 600;
+  cursor: pointer;
+  font-size: 1rem;
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  transition: all 0.3s ease;
+}
+
+.view-all-btn:hover {
+  color: #b38614;
+  transform: translateX(5px);
+}
+
+.view-all-btn::after {
+  content: "→";
+  transition: transform 0.3s ease;
+}
+
+.view-all-btn:hover::after {
+  transform: translateX(3px);
+}
+.load-more-container {
+  text-align: center;
+  margin: 30px 0;
+}
+
+.load-more-btn {
+  padding: 15px 15px;
+  background-color: #eacb33;
+  color: white;
+  border: none;
+  border-radius: 4px;
+  cursor: pointer;
+  font-size: 16px;
+  transition: background-color 0.3s;
+}
+
+.load-more-btn:hover {
+  background-color: #d9a34b;
+}
