@@ -21,19 +21,20 @@ export default function Navigation() {
     }
   };
 
-  // useEffect(() => {
-  //   const fetchCities = async () => {
-  //     try {
-  //       const response = await axios.get("http://127.0.0.1:8000/filter_city/");
-  //       if (response.data.status === "success") {
-  //         setCities(response.data.cities);
-  //       }
-  //     } catch (error) {
-  //       console.error("Error fetching cities:", error);
-  //     }
-  //   };
-  //   fetchCities();
-  // }, []);
+  useEffect(() => {
+    const fetchCities = async () => {
+      try {
+        const response = await axios.get(
+          "http://127.0.0.1:8000/get_all_cities/"
+        );
+
+        setCities(response.data.cities);
+      } catch (error) {
+        console.error("Error fetching cities:", error);
+      }
+    };
+    fetchCities();
+  }, []);
 
   // Close dropdown when clicking outside
   useEffect(() => {
@@ -74,12 +75,16 @@ export default function Navigation() {
           </Link>
         </li>
         <li
-          className="nav-item"
+          className="nav-item cities-dropdown-container"
           ref={citiesDropdownRef}
-          onMouseEnter={() => setIsCitiesDropdownOpen(true)}
-          onMouseLeave={() => setIsCitiesDropdownOpen(false)}
         >
-          <div className="nav-link-container">
+          <div
+            className="nav-link-container"
+            onMouseEnter={() => setIsCitiesDropdownOpen(true)}
+            onMouseLeave={() =>
+              setTimeout(() => setIsCitiesDropdownOpen(false), 300)
+            }
+          >
             <Link
               to="/homepage"
               className="nav-link"
@@ -90,18 +95,27 @@ export default function Navigation() {
             >
               Destinations
             </Link>
-            {isCitiesDropdownOpen && cities.length > 0 && (
-              <div className="cities-dropdown">
-                {cities.map((city) => (
-                  <Link
-                    key={city}
-                    to={`/attractions?city=${encodeURIComponent(city)}`}
-                    className="city-dropdown-item"
-                    onClick={() => setIsCitiesDropdownOpen(false)}
-                  >
-                    {city}
-                  </Link>
-                ))}
+
+            {isCitiesDropdownOpen && (
+              <div
+                className="cities-dropdown"
+                onMouseEnter={() => setIsCitiesDropdownOpen(true)}
+                onMouseLeave={() => setIsCitiesDropdownOpen(false)}
+              >
+                {cities.length > 0 ? (
+                  cities.map((city) => (
+                    <Link
+                      key={city}
+                      to={`/attractions?city=${encodeURIComponent(city)}`}
+                      className="city-dropdown-item"
+                      onClick={() => setIsCitiesDropdownOpen(false)}
+                    >
+                      {city}
+                    </Link>
+                  ))
+                ) : (
+                  <div className="city-dropdown-item">No cities available</div>
+                )}
               </div>
             )}
           </div>
@@ -109,15 +123,6 @@ export default function Navigation() {
         <li className="nav-item">
           <Link to="/safetytips" className="nav-link">
             Safety Tips
-          </Link>
-        </li>
-        <li className="nav-item">
-          <Link
-            to="/"
-            className="nav-link"
-            onClick={() => handleScroll("about")}
-          >
-            About Us
           </Link>
         </li>
       </ul>

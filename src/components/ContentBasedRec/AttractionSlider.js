@@ -27,6 +27,7 @@ const AttractionsSlider = ({
   const [showLeftArrow, setShowLeftArrow] = useState(false);
   const [showRightArrow, setShowRightArrow] = useState(true);
   const [expandedCards, setExpandedCards] = useState({});
+
   useEffect(() => {
     if (propItems && propItems.length > 0) {
       setItems(propItems);
@@ -135,6 +136,7 @@ const AttractionsSlider = ({
       }
     }
   };
+
   const scrollLeft = () => {
     if (sliderRef.current) {
       sliderRef.current.scrollBy({
@@ -181,9 +183,7 @@ const AttractionsSlider = ({
           </h2>
           {showViewAll && cityName && (
             <button
-              onClick={() =>
-                navigate(`/attractions?city=${encodeURIComponent(cityName)}`)
-              }
+              onClick={() => navigate(`/attractions?city={cityName}`)}
               className="view-all-btn"
             >
               View All
@@ -210,12 +210,15 @@ const AttractionsSlider = ({
             {items.length > 0 ? (
               items.map((item) => (
                 <article
-                  key={item.id || item.attraction_id}
+                  key={item._id || item.attraction_id || items.attraction_id}
                   className="recommendation-card"
                   onClick={() => {
                     navigate(
                       `/attractions/${
-                        item.attraction_id || item._id || item.id
+                        item.attraction_id ||
+                        item._id ||
+                        item.id ||
+                        items.attraction_id
                       }`
                     );
                   }}
@@ -225,7 +228,10 @@ const AttractionsSlider = ({
                     <button
                       className={`like-btn ${
                         likedItems.includes(
-                          item.attraction_id || item._id || item.id
+                          item.attraction_id ||
+                            item._id ||
+                            item.id ||
+                            items.attraction_id
                         )
                           ? "liked"
                           : ""
@@ -237,7 +243,10 @@ const AttractionsSlider = ({
 
                         // Use the most specific ID available
                         const attractionId =
-                          item.attraction_id || item._id || item.id;
+                          item.attraction_id ||
+                          item._id ||
+                          item.id ||
+                          items.attraction_id;
                         console.log("Using attractionId:", attractionId); // Debug
 
                         toggleLike(attractionId).catch(console.error);
@@ -252,7 +261,10 @@ const AttractionsSlider = ({
                       }
                     >
                       {likedItems.includes(
-                        item.attraction_id || item._id || item.id
+                        item.attraction_id ||
+                          item._id ||
+                          item.id ||
+                          items.attraction_id
                       ) ? (
                         <FaHeart />
                       ) : (
