@@ -14,12 +14,23 @@ import re
 from sklearn.metrics import f1_score, precision_score, recall_score, accuracy_score
 
 """ Remove these lines to the beginning of each view, and close client after use """
-
 client = MongoClient('mongodb://localhost:27017/')
 db = client['db']
 users_db = db['users']
 attractions_db = db['attractions']
 ratings_db = db['ratings']
+
+@csrf_exempt
+def get_all_cities(request):
+    if not client or not attractions_db:
+        return JsonResponse({"error": "db not connected"})
+    
+    # Use distinct to get unique city values directly from MongoDB
+    try:
+        cities = attractions_db.distinct("city")
+        return JsonResponse({'cities': cities})
+    except Exception as e:
+        return JsonResponse({"error": str(e)}, status=500)
 
 
 @csrf_exempt
@@ -653,13 +664,14 @@ def pearson_similarity(request):
             data = json.loads(request.body.decode('utf-8'))
         except json.JSONDecodeError:
             return JsonResponse({'error': 'Invalid JSON data'}, status=400)
+    
     elif request.method == 'GET':
         data = request.GET
+
     elif request.method == 'POST':
         data = request.POST
 
     try:
-        # Get target_user from request parameters
         target_user_id = data['user_id']
         
         # Fetch ratings from MongoDB
@@ -731,8 +743,7 @@ def pearson_similarity(request):
             if attraction:
                 attraction_details.append({
                     'id': str(attraction['_id']),
-                    'name': attraction.get('name', ''),
-                    # Add other relevant attraction fields as needed
+                    'name': attraction.get('name', '')                    
                 })
         
         response_data = {
@@ -831,3 +842,4 @@ def filter_city(request):
         
     except Exception as e:
         return JsonResponse({'error': str(e)}, status=500)
+    
