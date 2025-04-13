@@ -105,14 +105,41 @@ def login(request):
 
 @csrf_exempt
 def get_attractions(request):
-    attractions = list(attractions_db.find({}))
-    
-    for doc in attractions:
-        doc['_id'] = str(doc['_id'])
+    try:
+        # Handle different request methods and content types
+        if request.content_type == 'application/json':
+            try:
+                data = json.loads(request.body.decode('utf-8'))
+            except json.JSONDecodeError:
+                return JsonResponse({'error': 'Invalid JSON data'}, status=400)
+        elif request.method == 'GET':
+            data = request.GET
+        elif request.method == 'POST':
+            data = request.POST
 
-    # Return the documents in a JsonResponse
-    return JsonResponse({'status': 'success', 'attractions': attractions}, safe=False)
 
+
+        # Query with pagination and projection
+        attractions = list(attractions_db.find({}).limit(1000)) 
+
+        # Process results
+        result = []
+        for attraction in attractions:
+            attraction['id'] = str(attraction.pop('_id'))  # Rename _id to id
+            attraction.setdefault('image', '')  # Ensure image exists
+            attraction['description'] = attraction.get('description', '')  # Truncate
+            result.append(attraction)
+
+        return JsonResponse({
+            'status': 'success',
+            'data': result,
+           
+        }, safe=False)
+
+    except ValueError as e:
+        return JsonResponse({'status': 'error', 'message': 'Invalid page or limit value'}, status=400)
+    except Exception as e:
+        return JsonResponse({'status': 'error', 'message': str(e)}, status=500)
 
 @csrf_exempt
 def get_attraction_details(request):    
@@ -808,20 +835,22 @@ def view_ratings(request):
 
 @csrf_exempt
 def filter_city(request):
-    if request.content_type == 'application/json':
+    location = None
+    
+    # Handle different request methods
+    if request.method == 'GET':
+        location = request.GET.get('city')
+    elif request.method == 'POST':
+        if request.content_type == 'application/json':
             try:
                 data = json.loads(request.body.decode('utf-8'))
+                location = data.get('city')
             except json.JSONDecodeError:
                 return JsonResponse({'error': 'Invalid JSON data'}, status=400)
-            
-    elif request.method == 'GET':
-        data = request.GET
-        
-    elif request.method == 'POST':
-        data = request.POST
-
-    location = data['city']
+        else:
+            location = request.POST.get('city')
     
+    # Validate location parameter
     if not location:
         return JsonResponse({'error': 'Location parameter is required'}, status=400)
     
@@ -832,14 +861,16 @@ def filter_city(request):
         # Create a regex pattern that matches variations
         regex_pattern = '.*' + '.*'.join(normalized_query.split()) + '.*'
         
+        # Query database
         attractions = list(attractions_db.find({
             'city': {'$regex': regex_pattern, '$options': 'i'}
-            }))
+        }))
                     
+        # Convert MongoDB objects to JSON
         attractions_json = json.loads(json_util.dumps(attractions))
         
+        # Return consistent response format
         return JsonResponse({'attractions': attractions_json}, safe=False)
         
     except Exception as e:
         return JsonResponse({'error': str(e)}, status=500)
-    

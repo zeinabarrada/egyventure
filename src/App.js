@@ -15,6 +15,7 @@ import "slick-carousel/slick/slick.css";
 import "slick-carousel/slick/slick-theme.css";
 import LikesList from "./components/LikesPage.js";
 import AttractionDetail from "./components/ContentBasedRec/AttractionDetail.js";
+import CityAttractions from "./components/Destinations/CityAttractions.js";
 
 function App() {
   useEffect(() => {
@@ -52,6 +53,7 @@ function App() {
             <Route path="/safetytips" element={<SafetyTips />} />
             <Route path="/likes" element={<LikesList />} />
             <Route path="/attractions/:id" element={<AttractionDetail />} />
+            <Route path="/attractions" element={<CityAttractions />} />
           </Routes>
         </main>
       </AuthProvider>

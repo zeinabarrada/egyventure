@@ -11,42 +11,59 @@ import {
 import "./Card.css";
 import { useNavigate } from "react-router-dom";
 
-const AttractionsSlider = ({ title, fetchUrl, userId }) => {
+const AttractionsSlider = ({
+  title,
+  fetchUrl,
+  showViewAll = false,
+  cityName = null,
+  userId,
+  items: propItems = [],
+}) => {
   const navigate = useNavigate();
-  const [items, setItems] = useState([]);
+
+  const [items, setItems] = useState(propItems);
   const [likedItems, setLikedItems] = useState([]);
   const sliderRef = useRef(null);
   const [showLeftArrow, setShowLeftArrow] = useState(false);
   const [showRightArrow, setShowRightArrow] = useState(true);
   const [expandedCards, setExpandedCards] = useState({});
-
   useEffect(() => {
-    const fetchData = async () => {
-      try {
-        const response = await axios.get(fetchUrl, {
-          params: userId ? { user_id: userId } : {},
-        });
-        console.log(likedItems);
-        setItems(response.data.recommendations || response.data.must_see || []);
-        if (userId) {
-          const likesResponse = await axios.get(
-            "http://127.0.0.1:8000/view_likes/",
-            {
-              params: { user_id: userId },
-            }
+    if (propItems.length === 0 && fetchUrl) {
+      const fetchData = async () => {
+        try {
+          const response = await axios.get(fetchUrl, {
+            params: userId ? { user_id: userId } : {},
+          });
+          setItems(
+            response.data.recommendations || response.data.must_see || []
           );
-          if (likesResponse.data.success) {
-            const newLikedIds = likesResponse.data.attractions.map(
-              (a) => a._id || a.attraction_id
+        } catch (error) {
+          console.error("Error fetching data:", error);
+        }
+
+        // Fetch likes (optional part, keep as is)
+        if (userId) {
+          try {
+            const likesResponse = await axios.get(
+              "http://127.0.0.1:8000/view_likes/",
+              {
+                params: { user_id: userId },
+              }
             );
-            setLikedItems(newLikedIds); // Ensure state updates
+            if (likesResponse.data.success) {
+              const newLikedIds = likesResponse.data.attractions.map(
+                (a) => a._id || a.attraction_id
+              );
+              setLikedItems(newLikedIds);
+            }
+          } catch (error) {
+            console.error("Error fetching likes:", error);
           }
         }
-      } catch (error) {
-        console.error("Error fetching data:", error);
-      }
-    };
-    fetchData();
+      };
+
+      fetchData();
+    }
   }, [fetchUrl, userId]);
 
   const toggleLike = async (itemId) => {
@@ -158,6 +175,16 @@ const AttractionsSlider = ({ title, fetchUrl, userId }) => {
           <h2>
             <span className="highlight">{title}</span>
           </h2>
+          {showViewAll && cityName && (
+            <button
+              onClick={() =>
+                navigate(`/attractions?city=${encodeURIComponent(cityName)}`)
+              }
+              className="view-all-btn"
+            >
+              View All
+            </button>
+          )}
         </header>
 
         <div className="slider-container">
