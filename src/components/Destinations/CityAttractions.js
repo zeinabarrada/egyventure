@@ -1,8 +1,9 @@
 import React, { useEffect, useState } from "react";
 import { useLocation } from "react-router-dom";
 import axios from "axios";
-
+import Weather from "./Weather";
 import AttractionsSlider from "../ContentBasedRec/AttractionSlider";
+
 const CityAttractions = () => {
   const location = useLocation();
   const query = new URLSearchParams(location.search);
@@ -15,23 +16,33 @@ const CityAttractions = () => {
         const response = await axios.get(`http://127.0.0.1:8000/filter_city/`, {
           params: { city: city },
         });
-        setAttractions(response.data.attractions);
+        const attractionsData = Array.isArray(response.data?.attractions)
+          ? response.data.attractions
+          : [];
+        setAttractions(attractionsData);
       } catch (error) {
         console.error("Error fetching attractions:", error);
       }
     };
 
-    if (city) fetchCityAttractions();
+    fetchCityAttractions();
   }, [city]);
 
   return (
-    <AttractionsSlider
-      key={city}
-      title={city}
-      items={attractions}
-      cityName={city}
-      fetchUrl={null} // Prevent duplicate fetching
-    />
+    <div className="city-content-wrapper">
+      <div className="attractions-main-content">
+        <AttractionsSlider
+          key={`slider-${city}`}
+          title={`Destinations in ${city}`}
+          items={attractions}
+          cityName={city}
+          fetchUrl={null} // Prevent duplicate fetching
+        />
+      </div>
+      <div className="weather-sidebar">
+        <Weather city={city} />
+      </div>
+    </div>
   );
 };
 

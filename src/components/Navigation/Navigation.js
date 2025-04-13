@@ -21,19 +21,19 @@ export default function Navigation() {
     }
   };
 
-  useEffect(() => {
-    const fetchCities = async () => {
-      try {
-        const response = await axios.get("http://127.0.0.1:8000/filter_city/");
-        if (response.data.status === "success") {
-          setCities(response.data.cities);
-        }
-      } catch (error) {
-        console.error("Error fetching cities:", error);
-      }
-    };
-    fetchCities();
-  }, []);
+  // useEffect(() => {
+  //   const fetchCities = async () => {
+  //     try {
+  //       const response = await axios.get("http://127.0.0.1:8000/filter_city/");
+  //       if (response.data.status === "success") {
+  //         setCities(response.data.cities);
+  //       }
+  //     } catch (error) {
+  //       console.error("Error fetching cities:", error);
+  //     }
+  //   };
+  //   fetchCities();
+  // }, []);
 
   // Close dropdown when clicking outside
   useEffect(() => {
