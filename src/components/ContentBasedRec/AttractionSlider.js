@@ -21,13 +21,17 @@ const AttractionsSlider = ({
 }) => {
   const navigate = useNavigate();
 
-  const [items, setItems] = useState(propItems);
+  const [items, setItems] = useState([]);
   const [likedItems, setLikedItems] = useState([]);
   const sliderRef = useRef(null);
   const [showLeftArrow, setShowLeftArrow] = useState(false);
   const [showRightArrow, setShowRightArrow] = useState(true);
   const [expandedCards, setExpandedCards] = useState({});
   useEffect(() => {
+    if (propItems && propItems.length > 0) {
+      setItems(propItems);
+      return;
+    }
     if (propItems.length === 0 && fetchUrl) {
       const fetchData = async () => {
         try {

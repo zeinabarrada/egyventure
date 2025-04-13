@@ -9,7 +9,8 @@ import {
 import { useAuth } from "../Registration/AuthContext";
 import axios from "axios";
 import "./AttractionDetail.css";
-import { useState, useEffect } from "react";
+import AttractionsSlider from "./AttractionSlider";
+import { useState, useEffect, useCallback } from "react";
 const AttractionDetail = () => {
   const { id } = useParams();
   const navigate = useNavigate();
@@ -20,6 +21,8 @@ const AttractionDetail = () => {
   const [hasRated, setHasRated] = useState(false);
   const { user } = useAuth();
   const userId = user?.id;
+  const [recommendations, setRecommendations] = useState([]);
+  const [showRecommendations, setShowRecommendations] = useState(false);
 
   useEffect(() => {
     const fetchAttraction = async () => {
@@ -55,6 +58,7 @@ const AttractionDetail = () => {
             if (attractionRating) {
               setUserRating(attractionRating.rating);
               setHasRated(true);
+              fetchRecommendations();
             }
           }
         }
@@ -64,10 +68,22 @@ const AttractionDetail = () => {
     };
     fetchAttraction();
   }, [id, userId]);
+
+  const fetchRecommendations = useCallback(async () => {
+    try {
+      const response = await axios.get(`http://127.0.0.1:8000/NMF_SVD/`, {
+        params: { user_id: userId },
+      });
+      setRecommendations(response.data.recommendations || []);
+    } catch (error) {
+      console.error("Error fetching recommendations:", error);
+    }
+  }, [userId]);
   const handleRatingSubmit = async () => {
     if (userRating === 0 || hasRated) return; // Don't submit if no rating selected
 
     setIsSubmitting(true);
+
     try {
       // Replace with your actual API endpoint for submitting ratings
       const response = await axios.post(`http://127.0.0.1:8000/rate/`, {
@@ -81,6 +97,15 @@ const AttractionDetail = () => {
         response.data?.status === "success";
       if (isSuccess) {
         setHasRated(true);
+        setAttraction((prev) => ({
+          ...prev,
+          user_rating: userRating,
+        }));
+        setShowRecommendations(true);
+
+        // Fetch recommendations after successful rating
+        await fetchRecommendations();
+        console.log(hasRated);
         alert("Rating submitted successfully!");
       } else {
         throw new Error(response.data.message || "Failed to submit rating");
@@ -88,6 +113,10 @@ const AttractionDetail = () => {
     } catch (error) {
       console.error("Error submitting rating:", error);
       alert("Failed to submit rating. Please try again.");
+      setAttraction((prev) => ({
+        ...prev,
+        user_rating: 0,
+      }));
     } finally {
       setIsSubmitting(false);
     }
@@ -172,8 +201,16 @@ const AttractionDetail = () => {
 
         <div className="detail-meta">
           <span className="category">{attraction.categories}</span>
-          <span className="price-range">{attraction.price_range}</span>
         </div>
+        {(hasRated || showRecommendations) && recommendations.length > 0 && (
+          <div className="recommendations-section">
+            <AttractionsSlider
+              title="You might also like"
+              items={recommendations}
+              userId={userId}
+            />
+          </div>
+        )}
       </div>
     </section>
   );
