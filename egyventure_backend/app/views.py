@@ -237,8 +237,10 @@ def word2vec_recommendations(request):
                 data = json.loads(request.body.decode('utf-8'))
             except json.JSONDecodeError:
                 return JsonResponse({'error': 'Invalid JSON data'}, status=400)
+                
         elif request.method == 'GET':
             data = request.GET
+            
         elif request.method == 'POST':
             data = request.POST        
         
@@ -865,12 +867,18 @@ def filter_city(request):
         attractions = list(attractions_db.find({
             'city': {'$regex': regex_pattern, '$options': 'i'}
         }))
-                    
-        # Convert MongoDB objects to JSON
-        attractions_json = json.loads(json_util.dumps(attractions))
-        
+    
+        attractions_list = [{
+            "attraction_id": str(attraction["_id"]),
+            "name": attraction["name"],
+            "description": attraction['description'],
+            "categories": attraction['categories'],
+            "city": attraction['city'],
+            "image": attraction.get("image", "")
+        } for attraction in attractions]
+
         # Return consistent response format
-        return JsonResponse({'attractions': attractions_json}, safe=False)
+        return JsonResponse({'attractions': attractions_list}, safe=False)
         
     except Exception as e:
         return JsonResponse({'error': str(e)}, status=500)
