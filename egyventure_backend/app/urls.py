@@ -20,6 +20,6 @@ urlpatterns = [
     path('view_ratings/', views.view_ratings, name='view_ratings'),
     
     path('word2vec/', views.word2vec_recommendations, name='word2vec'),
-    path('pearson_similarity/', views.pearson_similarity, name='pearson_similarity'),
+    path('pearson_similarity/', views.pearson_similarity2, name='pearson_similarity'),
     path('NMF_SVD/', views.NMF_SVD, name='NMF_SVD'),
 ]
