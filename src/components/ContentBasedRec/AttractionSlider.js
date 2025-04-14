@@ -27,7 +27,7 @@ const AttractionsSlider = ({
   const [showLeftArrow, setShowLeftArrow] = useState(false);
   const [showRightArrow, setShowRightArrow] = useState(true);
   const [expandedCards, setExpandedCards] = useState({});
-
+  const getItemId = (item) => item.attraction_id || item._id || item.id;
   useEffect(() => {
     if (propItems && propItems.length > 0) {
       setItems(propItems);
@@ -183,7 +183,7 @@ const AttractionsSlider = ({
           </h2>
           {showViewAll && cityName && (
             <button
-              onClick={() => navigate(`/attractions?city={cityName}`)}
+              onClick={() => navigate(`/attractions?city=${cityName}`)}
               className="view-all-btn"
             >
               View All
@@ -287,17 +287,19 @@ const AttractionsSlider = ({
                     <h3>{item.name}</h3>
                     <div className="description-container">
                       <p className="description">
-                        {truncateDescription(item.description, item.id)}
+                        {truncateDescription(item.description, getItemId(item))}
                       </p>
                       {item.description && item.description.length > 100 && (
                         <button
                           className="read-more-btn"
                           onClick={(e) => {
                             e.stopPropagation();
-                            toggleDescription(item.id);
+                            toggleDescription(getItemId(item));
                           }}
                         >
-                          {expandedCards[item.id] ? "Read Less" : "Read More"}
+                          {expandedCards[getItemId(item)]
+                            ? "Read Less"
+                            : "Read More"}
                         </button>
                       )}
                     </div>

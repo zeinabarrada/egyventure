@@ -1,8 +1,9 @@
-/* Recommendations Section */
 .recommendations-section {
-  background: linear-gradient(to bottom, #f8f9fa 0%, #ffffff 100%);
+  width: 100vw;
+  min-height: 100vh;
+  background: linear-gradient(to bottom, #f1efec 0%, #ffffff 100%);
+  padding: 4rem 0;
 }
-
 .container {
   max-width: 1200px;
   margin: 0 auto;
@@ -10,35 +11,27 @@
 }
 
 .section-header {
-  text-align: center;
-  margin-top: -4rem;
-  margin-bottom: -3rem;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 0 2rem;
+  margin-top: -8rem;
+  margin-bottom: 1rem;
+  flex-wrap: wrap;
+  gap: 1rem;
 }
 
 .section-header h2 {
-  font-size: 2.5rem;
-  text-align: center;
-  color: #2d3748;
+  font-size: 3rem;
+  color: #030303;
   font-weight: 700;
-  margin-bottom: -7rem;
+  margin: 0;
+  flex: 1;
 }
 
 .highlight {
-  color: #d4a017;
-  position: relative;
-  z-index: 1;
-}
-
-.highlight::after {
-  content: "";
-  position: absolute;
-  bottom: 5px;
-  left: 0;
-  width: 100%;
-  height: 12px;
-  background-color: rgba(212, 160, 23, 0.2);
-  z-index: -1;
-  transform: skew(-15deg);
+  color: #030303;
+  text-shadow: 0 0 8px rgba(212, 160, 23, 0.3);
 }
 
 .subtitle {
@@ -53,7 +46,7 @@
   display: grid;
   grid-template-columns: repeat(auto-fill, minmax(350px, 1fr));
   gap: 2rem;
-  margin-top: 2rem;
+  margin-top: -6rem;
   display: flex;
   gap: 1.5rem;
   overflow-x: auto;
@@ -143,7 +136,7 @@
   color: white;
   padding: 6px 12px;
   border-radius: 20px;
-  font-size: 0.8rem;
+  font-size: 1rem !important;
   display: flex;
   align-items: center;
   gap: 5px;
@@ -164,14 +157,14 @@
 .card-content h3 {
   margin: 0 0 1rem 0;
   color: #2d3748;
-  font-size: 1.4rem;
+  font-size: 1.6rem;
   font-weight: 700;
   line-height: 1.3;
 }
 
 .description {
   color: #4a5568;
-  font-size: 1rem;
+  font-size: 1.1rem;
   line-height: 1.6;
   margin-bottom: 1.5rem;
   flex: 1;
@@ -373,7 +366,7 @@
 .read-more-btn {
   background: none;
   border: none;
-  color: #0066cc;
+  color: #123458;
   cursor: pointer;
   padding: 0;
   margin-top: 5px;
@@ -388,29 +381,29 @@
   display: flex;
   justify-content: space-between;
   align-items: center;
+  padding: 0 1rem;
   margin-bottom: 1rem;
 }
 
 .view-all-btn {
   background: none;
   border: none;
-  color: #d4a017;
-  font-weight: 600;
+  color: #123458;
+  font-weight: 800;
   cursor: pointer;
-  font-size: 1rem;
+  font-size: 1.2rem;
   display: flex;
   align-items: center;
   gap: 0.5rem;
   transition: all 0.3s ease;
+  text-decoration: underline;
 }
 
 .view-all-btn:hover {
-  color: #b38614;
   transform: translateX(5px);
 }
 
 .view-all-btn::after {
-  content: "→";
   transition: transform 0.3s ease;
 }
 

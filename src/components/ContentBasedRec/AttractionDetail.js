@@ -11,6 +11,7 @@ import axios from "axios";
 import "./AttractionDetail.css";
 import AttractionsSlider from "./AttractionSlider";
 import { useState, useEffect, useCallback } from "react";
+
 const AttractionDetail = () => {
   const { id } = useParams();
   const navigate = useNavigate();
@@ -27,7 +28,6 @@ const AttractionDetail = () => {
   useEffect(() => {
     const fetchAttraction = async () => {
       try {
-        // Fetch attraction details
         const attractionResponse = await axios.get(
           `http://127.0.0.1:8000/get_attraction_details/`,
           { params: { attraction_id: id } }
@@ -41,19 +41,15 @@ const AttractionDetail = () => {
           );
         }
 
-        // Check if user has rated THIS specific attraction
         if (userId) {
           const ratingsResponse = await axios.get(
             `http://127.0.0.1:8000/view_ratings/`,
             { params: { user_id: userId } }
           );
-          console.log(ratingsResponse.data);
           if (ratingsResponse.data.ratings) {
-            // Find if this attraction exists in user's ratings
             const attractionRating = ratingsResponse.data.ratings.find(
               (rating) => String(rating.attraction_id) === String(id)
             );
-            console.log("Found rating for this attraction:", attractionRating); // Debug log
 
             if (attractionRating) {
               setUserRating(attractionRating.rating);
@@ -79,22 +75,24 @@ const AttractionDetail = () => {
       console.error("Error fetching recommendations:", error);
     }
   }, [userId]);
+
   const handleRatingSubmit = async () => {
-    if (userRating === 0 || hasRated) return; // Don't submit if no rating selected
+    if (userRating === 0 || hasRated) return;
 
     setIsSubmitting(true);
 
     try {
-      // Replace with your actual API endpoint for submitting ratings
       const response = await axios.post(`http://127.0.0.1:8000/rate/`, {
         user_id: userId,
         attraction_id: id,
         rating: userRating,
       });
+
       const isSuccess =
         response.status === 200 ||
         response.data?.success ||
         response.data?.status === "success";
+
       if (isSuccess) {
         setHasRated(true);
         setAttraction((prev) => ({
@@ -102,10 +100,7 @@ const AttractionDetail = () => {
           user_rating: userRating,
         }));
         setShowRecommendations(true);
-
-        // Fetch recommendations after successful rating
         await fetchRecommendations();
-        console.log(hasRated);
         alert("Rating submitted successfully!");
       } else {
         throw new Error(response.data.message || "Failed to submit rating");
@@ -176,41 +171,37 @@ const AttractionDetail = () => {
 
   return (
     <section className="attraction-detail">
-      <div className="detail-header">
-        <h1>{attraction.name}</h1>
-        <div className="detail-rating">{renderRatingInput()}</div>
-      </div>
-
-      <div className="detail-image">
-        <img src={attraction.image} alt={attraction.name} />
-      </div>
-
-      <div className="detail-badges">
-        <span className="location-badge">
-          <FaMapMarkerAlt /> {attraction.city || "Unknown"}
-        </span>
-        {attraction.century && (
-          <span className="era-badge">
-            <FaCalendarAlt /> {attraction.century}
-          </span>
-        )}
-      </div>
-
-      <div className="detail-content">
-        <p className="full-description">{attraction.description}</p>
-
-        <div className="detail-meta">
-          <span className="category">{attraction.categories}</span>
+      <div className="detail-layout">
+        <div className="detail-image">
+          <img src={attraction.image} alt={attraction.name} />
         </div>
-        {(hasRated || showRecommendations) && recommendations.length > 0 && (
-          <div className="recommendations-section">
-            <AttractionsSlider
-              title="You might also like"
-              items={recommendations}
-              userId={userId}
-            />
+
+        <div className="detail-info">
+          <div className="detail-header">
+            <h1>{attraction.name}</h1>
+            <div className="location-badge">
+              <FaMapMarkerAlt /> {attraction.city || "Unknown"}
+            </div>
           </div>
-        )}
+
+          {renderRatingInput()}
+
+          <p className="full-description">{attraction.description}</p>
+
+          <div className="detail-meta">
+            <span className="category">{attraction.categories}</span>
+          </div>
+
+          {(hasRated || showRecommendations) && recommendations.length > 0 && (
+            <div className="recommendations-section">
+              <AttractionsSlider
+                title="You might also like"
+                items={recommendations}
+                userId={userId}
+              />
+            </div>
+          )}
+        </div>
       </div>
     </section>
   );
