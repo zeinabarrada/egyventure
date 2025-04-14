@@ -1,17 +1,18 @@
 from django.conf import settings
 from collections import defaultdict
-import numpy as np
 import pandas as pd
+import numpy as np
+from surprise import NMF, SVD, Dataset, Reader
+from surprise.model_selection import train_test_split
 from gensim.models import Word2Vec
 from sklearn.metrics.pairwise import cosine_similarity
-from surprise import NMF, SVD, Dataset, Reader
+from sklearn.metrics import f1_score, precision_score, recall_score, accuracy_score
 from django.http import JsonResponse
 from django.views.decorators.csrf import csrf_exempt
 from pymongo import MongoClient
 from bson import ObjectId, json_util
 import json
 import re
-from sklearn.metrics import f1_score, precision_score, recall_score, accuracy_score
 
 """ Remove these lines to the beginning of each view, and close client after use """
 client = MongoClient('mongodb://localhost:27017/')
@@ -259,43 +260,49 @@ def word2vec_recommendations(request):
                 data = json.loads(request.body.decode('utf-8'))
             except json.JSONDecodeError:
                 return JsonResponse({'error': 'Invalid JSON data'}, status=400)
-                
         elif request.method == 'GET':
             data = request.GET
-            
         elif request.method == 'POST':
             data = request.POST        
         
-        user_id = data['user_id']
+        user_id = data.get('user_id')
+        if not user_id:
+            return JsonResponse({"error": "user_id is required"}, status=400)
         
         # 1. Get user data
-        user_oid = ObjectId(user_id)
-        user = users_db.find_one({'_id': user_oid})
+        try:
+            user_oid = ObjectId(user_id)
+            user = users_db.find_one({'_id': user_oid})
+        except:
+            return JsonResponse({"error": "Invalid user ID format"}, status=400)
         
         if not user:
-            return JsonResponse({"error": "user not found"})
+            return JsonResponse({"error": "User not found"}, status=404)
         
-        interests = user['interests']  # "sights & landmarks, sacred & religious sites"
+        interests = user.get('interests', '')
         
         # 2. Get attractions from MongoDB
-        attractions = list(db.attractions.find({}))
+        attractions = list(attractions_db.find({}))
+        if not attractions:
+            return JsonResponse({"error": "No attractions found"}, status=404)
+            
         df = pd.DataFrame(attractions)
         
         # 3. Preprocessing
         def preprocess(text):
-            return [word.strip().lower() for word in text.split(',')]
+            if not text or pd.isna(text):
+                return []
+            return [word.strip().lower() for word in str(text).split(',') if word.strip()]
         
         # Process attractions
-        df['categories_cleaned'] = df['categories'].apply(
-            lambda x: preprocess(x) if x else []
-        )
+        df['categories_cleaned'] = df['categories'].apply(preprocess)
         
         # Process user interests
         user_interests_cleaned = preprocess(interests)
         
         # 4. Word2Vec Model
-        # Create training data from attraction categories
-        sentences = [doc.split() for doc in df['categories'].fillna('').str.lower()]
+        # Create training data from cleaned categories
+        sentences = df['categories_cleaned'].tolist()
         
         # Train model
         model = Word2Vec(
@@ -309,13 +316,13 @@ def word2vec_recommendations(request):
         # 5. Generate Embeddings
         # Attraction embeddings
         attraction_embeddings = []
-        for tags in df['categories']:
-            vectors = [model.wv[word] for word in tags.split() if word in model.wv]
+        for tags in df['categories_cleaned']:
+            vectors = [model.wv[word] for word in tags if word in model.wv]
             avg_vector = np.mean(vectors, axis=0) if vectors else np.zeros(100)
             attraction_embeddings.append(avg_vector)
         
         # User embedding
-        user_vectors = [model.wv[word] for word in ' '.join(user_interests_cleaned).split() if word in model.wv]
+        user_vectors = [model.wv[word] for word in user_interests_cleaned if word in model.wv]
         user_embedding = np.mean(user_vectors, axis=0) if user_vectors else np.zeros(100)
         
         # 6. Calculate Similarity
@@ -326,175 +333,174 @@ def word2vec_recommendations(request):
         top_indices = np.argsort(similarities)[::-1][:n]
         recommended_attractions = df.iloc[top_indices]
         
-        # Convert ObjectIds to strings
-        recommended_ids = [str(oid) for oid in recommended_attractions]
-        
-        recommendations = [{
-            "attraction_id": str(attraction['_id']),
-            "name": attraction['name'], 
-            "description":attraction['description'],            
-            "categories": attraction['categories'],
-            "city": attraction['city'],        
-            "image":attraction['image'],
-        } for _, attraction in recommended_attractions.iterrows()]
+        # Prepare response
+        recommendations = []
+        for _, attraction in recommended_attractions.iterrows():
+            rec = {
+                "attraction_id": str(attraction['_id']),
+                "name": attraction.get('name', ''),
+                "description": attraction.get('description', ''),
+                "categories": attraction.get('categories', ''),
+                "city": attraction.get('city', ''),
+                "image": attraction.get('image', '')
+            }
+            recommendations.append(rec)
         
         return JsonResponse({
             "user_id": str(user_id),
-            "user_name": user['fname'],
+            "user_name": user.get('fname', ''),
             "recommendations": recommendations
-        })
+        }, safe=False)
         
     except Exception as e:
-        return JsonResponse({"error": str(e)}, status=500)
+        import traceback
+        traceback.print_exc()
+        return JsonResponse({"error": f"An error occurred: {str(e)}"}, status=500)
 
 
 @csrf_exempt
 def NMF_SVD(request):
-    """Recommend attractions while strictly excluding already rated ones."""
+    users_df = pd.DataFrame(list(users_db.find({})))
+    attractions_df = pd.DataFrame(list(attractions_db.find({})))
+    ratings_df = pd.DataFrame(list(ratings_db.find({})))
+    
+    
+    # Ensure attraction_id and user_id are unique
+    user_ids = {id: idx for idx, id in enumerate(users_df["_id"].unique())}
+    attraction_ids = {id: idx for idx, id in enumerate(attractions_df["_id"].unique())}
+    inv_attraction_ids = {v: k for k, v in attraction_ids.items()}  # Reverse mapping    
+
+    # Convert Ratings to Binary for Classification (1 = liked, 0 = not liked)
+    threshold = 3
+    ratings_df["rating"] = (ratings_df["rating"] >= threshold).astype(int)
+
+    # Map IDs to indices
+    ratings_df["user_id"] = ratings_df["user_id"].map(user_ids)
+    ratings_df["attraction_id"] = ratings_df["attraction_id"].map(attraction_ids)
+
+    # Remove NaN mappings
+    ratings_df = ratings_df.dropna().astype(int)
+
+    # Debugging Info
+    print("\n📊 *Data Distribution* 📊")
+    print("Number of users:", len(user_ids))
+    print("Number of attractions:", len(attraction_ids))
+    print("Number of ratings:", len(ratings_df))
+    print("Rating distribution:\n", ratings_df["rating"].value_counts())
+
+    # Prepare attractions data  removed ', '
+    attractions_df["categories"] = attractions_df["categories"].apply(lambda x: x.split(",") if isinstance(x, str) else [])
+
+    # Prepare dataset for Surprise
+    reader = Reader(rating_scale=(0, 1))
+    data = Dataset.load_from_df(ratings_df[["user_id", "attraction_id", "rating"]], reader)
+    trainset, testset = train_test_split(data, test_size=0.2)
+
+    # Train model (NMF with fallback to SVD)
     try:
-        # Get and validate user ID
-        user_id = request.GET.get("user_id")
-        if not user_id:
-            return JsonResponse({"error": "User ID is required."}, status=400)
-        
-        try:
-            user_oid = ObjectId(user_id)
-        except:
-            return JsonResponse({"error": "Invalid user ID format."}, status=400)
+        print("\n🚀 Training NMF Model...")
+        nmf_model = NMF(n_factors=5, n_epochs=50, reg_pu=0.1, reg_qi=0.1)
+        nmf_model.fit(trainset)
+        model_to_use = nmf_model
+        print("✅ NMF Model Trained Successfully!")
+    except ZeroDivisionError as e:
+        print(f"\n⚠ NMF failed: {e}. Switching to SVD...")
+        svd_model = SVD(n_factors=10, n_epochs=100, lr_all=0.005, reg_all=0.02)
+        svd_model.fit(trainset)
+        model_to_use = svd_model
+        print("✅ SVD Model Trained Successfully!")
 
-        # Fetch user data
-        user = users_db.find_one({"_id": user_oid})
-        if not user:
-            return JsonResponse({"error": "User not found."}, status=404)
+    # Evaluate Model
+    def evaluate_model(model, testset):
+        y_true, y_pred = [], []
+        for uid, iid, actual in testset:
+            pred = model.predict(uid, iid).est
+            predicted_label = 1 if pred >= 0.5 else 0
+            y_true.append(actual)
+            y_pred.append(predicted_label)
 
-        # Get all attractions and user's ratings first
-        attractions = list(attractions_db.find({}))
-        if not attractions:
-            return JsonResponse({"error": "No attractions found."}, status=404)
+        accuracy = accuracy_score(y_true, y_pred)
+        precision = precision_score(y_true, y_pred, zero_division=0)
+        recall = recall_score(y_true, y_pred, zero_division=0)
+        f1 = f1_score(y_true, y_pred, zero_division=0)
 
-        # Get user's rated attractions - CRITICAL FILTER
-        user_ratings = list(db.ratings.find({"user_id": user_id}))
-        rated_attraction_ids = {str(rating['attraction_id']) for rating in user_ratings}        
+        print("\n🔍 *Model Evaluation Metrics* 🔍")
+        print(f"📌 Accuracy: {accuracy:.4f}")
+        print(f"📌 Precision: {precision:.4f}")
+        print(f"📌 Recall: {recall:.4f}")
+        print(f"📌 F1-Score: {f1:.4f}")
 
-        # Get all ratings for training
-        all_ratings = list(db.ratings.find({}))
-        if not all_ratings:
-            return JsonResponse({"error": "No ratings data found."}, status=404)
+    evaluate_model(model_to_use, testset)
 
-        # Prepare DataFrame
-        ratings_df = pd.DataFrame(all_ratings)
-        
-        # Create mappings
-        user_ids = {str(id): idx for idx, id in enumerate(ratings_df["user_id"].unique())}
-        attraction_ids = {str(id): idx for idx, id in enumerate(ratings_df["attraction_id"].unique())}
-        
-        # Create reverse mapping for later
-        idx_to_attraction_id = {v: k for k, v in attraction_ids.items()}
-
-        # Check if user exists in ratings
-        user_idx = user_ids.get(str(user_oid))
+    # Recommend attractions for a user
+    def recommend_attractions(user_id, model, attractions_df, top_n=5):
+        user_idx = user_ids.get(user_id, None)
         if user_idx is None:
-            return JsonResponse({"error": "User not found in ratings."}, status=404)
+            print(f"⚠ User {user_id} not found!")
+            return pd.DataFrame()
 
-        # Prepare matrix data
-        ratings_df["user_idx"] = ratings_df["user_id"].map(user_ids)
-        ratings_df["attraction_idx"] = ratings_df["attraction_id"].map(attraction_ids)
-        ratings_df = ratings_df.dropna().astype({'user_idx': int, 'attraction_idx': int})
-        ratings_df["rating"] = (ratings_df["rating"] >= 3).astype(int)
+        predictions = [model.predict(user_idx, attraction_id) for attraction_id in attraction_ids.values()]
+        predictions = [pred for pred in predictions if pred.est >= 0]
+        predictions.sort(key=lambda x: x.est, reverse=True)
 
-        # Train model
-        reader = Reader(rating_scale=(0, 1))
-        data = Dataset.load_from_df(ratings_df[["user_idx", "attraction_idx", "rating"]], reader)
-        full_trainset = data.build_full_trainset()
-        testset = full_trainset.build_testset()
-        
-        # Train & Compare NMF and SVD
-        def train_model(model, trainset, testset):
-            """Train model and return evaluation scores."""
-            model.fit(full_trainset)
-            y_true, y_pred = [], []
+        recommended_ids = [pred.iid for pred in predictions[:top_n]]
+        real_ids = [inv_attraction_ids[iid] for iid in recommended_ids]
+        recommended_attractions = attractions_df[attractions_df["_id"].isin(real_ids)]
+        return recommended_attractions[["name", "categories"]]
 
-            for uid, iid, actual in testset:
-                pred = model.predict(uid, iid).est
-                predicted_label = 1 if pred >= 0.5 else 0
-                y_true.append(actual)
-                y_pred.append(predicted_label)
+    # Recommend similar attractions to a given attraction
+    def recommend_similar_attractions(attraction_id, model, top_n=5):
+        if not hasattr(model, 'qi'):
+            print("❌ This model doesn't support item similarity (fallback model used).")
+            return pd.DataFrame()
 
-            return {
-                "accuracy": accuracy_score(y_true, y_pred),
-                "precision": precision_score(y_true, y_pred, zero_division=0),
-                "recall": recall_score(y_true, y_pred, zero_division=0),
-                "f1": f1_score(y_true, y_pred, zero_division=0),
-                "model": model
-            }
+        attraction_idx = attraction_ids.get(attraction_id, None)
+        if attraction_idx is None:
+            print(f"⚠ Attraction ID {attraction_id} not found!")
+            return pd.DataFrame()
 
-        nmf_results = train_model(NMF(n_factors=5, n_epochs=50, reg_pu=0.1, reg_qi=0.1), full_trainset, testset)
-        svd_results = train_model(SVD(n_factors=10, n_epochs=100, lr_all=0.005, reg_all=0.02), full_trainset, testset)
+        # Check if target vector is valid
+        target_vector = model.qi[attraction_idx]
+        if np.count_nonzero(target_vector) == 0:
+            print("⚠ Target attraction vector is empty or unrated.")
+            return fallback_by_category(attraction_id, top_n)
 
-        # Choose the best model
-        if nmf_results["f1"] >= svd_results["f1"] :
-            model_name = 'NMF'
-            best_model = nmf_results['model']            
-        else:
-            model_name = 'SVD'
-            best_model = svd_results['model']
+        # Filter out under-rated attractions
+        rating_counts = ratings_df["attraction_id"].value_counts()
+        well_rated_indices = [aid for aid in rating_counts[rating_counts >= 2].index]
 
-        # Generate predictions ONLY for unrated attractions
-        predictions = []
-        for attraction_idx in attraction_ids.values():
-            attraction_id_str = idx_to_attraction_id[attraction_idx]
-                        
-            if attraction_id_str in rated_attraction_ids:
-                continue
-                
-            try:
-                pred = best_model.predict(user_idx, attraction_idx)
-                predictions.append({
-                    "attraction_id": attraction_id_str,
-                    "score": pred.est,
-                    "iid": attraction_idx
-                })
-            except Exception as e:
-                return JsonResponse({'message': str(e)}, staus=500)
+        similarities = []
+        for idx in well_rated_indices:
+            if idx != attraction_idx and np.count_nonzero(model.qi[idx]) > 0:
+                sim = np.dot(target_vector, model.qi[idx]) / (np.linalg.norm(target_vector) * np.linalg.norm(model.qi[idx]))
+                similarities.append((idx, sim))
 
-        # Sort by score descending
-        predictions.sort(key=lambda x: x["score"], reverse=True)
+        similarities.sort(key=lambda x: x[1], reverse=True)
+        top_indices = [idx for idx, sim in similarities[:top_n]]
+        real_ids = [inv_attraction_ids[iid] for iid in top_indices]
+        similar_attractions = attractions_df[attractions_df["_id"].isin(real_ids)]
+        return similar_attractions[["name", "categories"]]
 
-        # Get top 10 unrated attractions
-        top_recommendations = predictions[:10]
-        recommended_ids = [rec["attraction_id"] for rec in top_recommendations]
+    # Fallback using content-based (category match)
+    def fallback_by_category(attraction_id, top_n=5):
+        row = attractions_df[attractions_df["_id"] == attraction_id]
+        if row.empty:
+            return pd.DataFrame()
+        cats = row.iloc[0]["categories"]
+        similar = attractions_df[attractions_df["categories"].apply(lambda c: any(cat in c for cat in cats))]
+        return similar[["name", "categories"]].head(top_n)
 
-        # filter any rated attractions that slipped through
-        recommended_attractions = [
-            attraction for attraction in attractions 
-            if str(attraction["_id"]) in recommended_ids
-            and str(attraction["_id"]) not in rated_attraction_ids
-        ]
+    # Example: Recommend for a user
+    test_user = list(user_ids.keys())[0]
+    user_recommendations = recommend_attractions(test_user, model_to_use, attractions_df, top_n=5)
+    print("\n🔹 *User-Based Recommended Attractions* 🔹")
+    print(user_recommendations)
 
-        # Prepare response
-        recommendations = [{
-            "id": str(attraction["_id"]),
-            "score": round(next(rec["score"] for rec in top_recommendations 
-                            if rec["attraction_id"] == str(attraction["_id"])), 2),
-            "name": attraction["name"],
-            "categories": attraction['categories'],
-            "city": attraction['city'],            
-            "image": attraction.get("image", "")
-        } for attraction in recommended_attractions]
-
-        return JsonResponse({
-            "user_id": str(user_oid),
-            'user_name': user['fname'],
-            'model': model_name,
-            "recommendations": recommendations,
-            "debug": {
-                "recommended_attractions": len(attraction_ids),
-                "unrated_considered": len(predictions)                
-            }
-        })
-
-    except Exception as e:
-        return JsonResponse({"error": str(e)}, status=500)
+    # Example: Recommend based on attraction
+    test_attraction = list(attraction_ids.keys())[146]  # Example attraction_id
+    similar_attractions = recommend_similar_attractions(test_attraction, model_to_use, top_n=5)
+    print(f"\n🔸 *Attractions Similar to '{test_attraction}'* 🔸")
+    print(similar_attractions)
 
 
 @csrf_exempt
