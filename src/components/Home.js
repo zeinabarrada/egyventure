@@ -18,7 +18,10 @@ export default function Home() {
           "http://127.0.0.1:8000/get_attractions/"
         );
         console.log(response.data);
-        if (response.data.status === "success") {
+        if (
+          response.data.status === "success" ||
+          response.data.status === 200
+        ) {
           setAttractions(response.data.data);
         } else {
           throw new Error("Failed to fetch attractions");

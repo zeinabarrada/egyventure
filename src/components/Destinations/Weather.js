@@ -66,14 +66,7 @@ const WeatherDisplay = ({ city }) => {
             <FaTemperatureHigh />
             <span>Feels like: {Math.round(weather.main.feels_like)}°C</span>
           </div>
-          <div className="detail">
-            <FaWater />
-            <span>Humidity: {weather.main.humidity}%</span>
-          </div>
-          <div className="detail">
-            <FaWind />
-            <span>Wind: {weather.wind.speed} m/s</span>
-          </div>
+
           <div className="detail">
             <FaCloud />
             <span>{weather.weather[0].description}</span>

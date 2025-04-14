@@ -292,7 +292,7 @@ def word2vec_recommendations(request):
         def preprocess(text):
             if not text or pd.isna(text):
                 return []
-            return [word.strip().lower() for word in str(text).split(',') if word.strip()]
+            return [word.strip().lower() for word in str(text).split(' ') if word.strip()]
         
         # Process attractions
         df['categories_cleaned'] = df['categories'].apply(preprocess)

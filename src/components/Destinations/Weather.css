@@ -14,7 +14,7 @@
   text-align: center;
   margin-top: -5rem;
   color: #e1790a;
-  font-size: 1.8rem;
+  font-size: 2rem;
 }
 
 /* Current weather section */
@@ -41,7 +41,7 @@
 }
 
 .weather-main .temp {
-  font-size: 2.5rem;
+  font-size: 2.9rem;
   font-weight: bold;
   margin-left: 10px;
   margin-right: 10px;
@@ -60,7 +60,7 @@
   background-color: #f1f8fe;
   padding: 8px 12px;
   border-radius: 20px;
-  font-size: 0.9rem;
+  font-size: 1.2rem;
 }
 
 .detail svg {
@@ -94,7 +94,7 @@
   text-align: center;
   margin-bottom: 15px;
   color: #e1790a;
-  font-size: 1.4rem;
+  font-size: 1.9rem;
 }
 
 .forecast-items {
@@ -133,7 +133,7 @@
 }
 
 .forecast-temp {
-  font-size: 1.1rem;
+  font-size: 1.3rem;
   color: #333;
   margin-top: 8px;
   font-weight: 500;

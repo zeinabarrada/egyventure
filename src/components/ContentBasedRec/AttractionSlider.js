@@ -173,6 +173,7 @@ const AttractionsSlider = ({
       ? text
       : text.substring(0, maxLength) + "...";
   };
+  if (items.length <= 5) return null;
 
   return (
     <section className="recommendations-section">
@@ -302,11 +303,6 @@ const AttractionsSlider = ({
                             : "Read More"}
                         </button>
                       )}
-                    </div>
-                    <div className="card-footer">
-                      <span className="category-tag">
-                        {item.categories?.split(",")[0]?.trim() || "Attraction"}
-                      </span>
                     </div>
                   </div>
                 </article>

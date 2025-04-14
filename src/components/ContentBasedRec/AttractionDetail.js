@@ -67,9 +67,12 @@ const AttractionDetail = () => {
 
   const fetchRecommendations = useCallback(async () => {
     try {
-      const response = await axios.get(`http://127.0.0.1:8000/NMF_SVD/`, {
-        params: { user_id: userId },
-      });
+      const response = await axios.get(
+        `http://127.0.0.1:8000/pearson_similarity/`,
+        {
+          params: { attraction_id: id },
+        }
+      );
       setRecommendations(response.data.recommendations || []);
     } catch (error) {
       console.error("Error fetching recommendations:", error);
@@ -187,10 +190,6 @@ const AttractionDetail = () => {
           {renderRatingInput()}
 
           <p className="full-description">{attraction.description}</p>
-
-          <div className="detail-meta">
-            <span className="category">{attraction.categories}</span>
-          </div>
 
           {(hasRated || showRecommendations) && recommendations.length > 0 && (
             <div className="recommendations-section">

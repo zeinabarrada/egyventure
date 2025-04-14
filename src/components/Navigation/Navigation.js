@@ -95,7 +95,7 @@ export default function Navigation() {
             >
               Destinations
             </Link>
-
+            {console.log(cities)}
             {isCitiesDropdownOpen && (
               <div
                 className="cities-dropdown"
