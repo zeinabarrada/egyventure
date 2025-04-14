@@ -9,16 +9,18 @@ const CityAttractions = () => {
   const query = new URLSearchParams(location.search);
   const city = query.get("city");
   const [attractions, setAttractions] = useState([]);
+  const normalizedCity = city?.trim().toLowerCase();
 
   useEffect(() => {
     const fetchCityAttractions = async () => {
       try {
         const response = await axios.get(`http://127.0.0.1:8000/filter_city/`, {
-          params: { city: city },
+          params: { city: normalizedCity },
         });
         const attractionsData = Array.isArray(response.data?.attractions)
           ? response.data.attractions
           : [];
+        console.log(response.data.attractions);
         setAttractions(attractionsData);
       } catch (error) {
         console.error("Error fetching attractions:", error);
@@ -26,17 +28,22 @@ const CityAttractions = () => {
     };
 
     fetchCityAttractions();
-  }, [city]);
+  }, [normalizedCity]);
 
   return (
     <div className="city-content-wrapper">
       <div className="attractions-main-content">
         <AttractionsSlider
-          key={`slider-${city}`}
+          key={normalizedCity}
           title={`Destinations in ${city}`}
           items={attractions}
-          cityName={city}
-          fetchUrl={null} // Prevent duplicate fetching
+          cityName={normalizedCity}
+          fetchUrl={
+            (`http://127.0.0.1:8000/filter_city/`,
+            {
+              params: { city: normalizedCity },
+            })
+          } // Prevent duplicate fetching
         />
       </div>
       <div className="weather-sidebar">
