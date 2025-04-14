@@ -13,6 +13,11 @@ from pymongo import MongoClient
 from bson import ObjectId, json_util
 import json
 import re
+from sklearn.metrics.pairwise import cosine_similarity
+from sklearn.feature_extraction.text import TfidfVectorizer
+from bson import ObjectId
+import json
+from django.http import JsonResponse
 
 """ Remove these lines to the beginning of each view, and close client after use """
 client = MongoClient('mongodb://localhost:27017/')
@@ -362,8 +367,7 @@ def word2vec_recommendations(request):
 def NMF_SVD(request):
     users_df = pd.DataFrame(list(users_db.find({})))
     attractions_df = pd.DataFrame(list(attractions_db.find({})))
-    ratings_df = pd.DataFrame(list(ratings_db.find({})))
-    
+    ratings_df = pd.DataFrame(list(ratings_db.find({})))    
     
     # Ensure attraction_id and user_id are unique
     user_ids = {id: idx for idx, id in enumerate(users_df["_id"].unique())}
@@ -372,14 +376,11 @@ def NMF_SVD(request):
 
     # Convert Ratings to Binary for Classification (1 = liked, 0 = not liked)
     threshold = 3
-    ratings_df["rating"] = (ratings_df["rating"] >= threshold).astype(int)
+    ratings_df["rating"] = (ratings_df["rating"] >= threshold).astype(int)    
 
     # Map IDs to indices
     ratings_df["user_id"] = ratings_df["user_id"].map(user_ids)
     ratings_df["attraction_id"] = ratings_df["attraction_id"].map(attraction_ids)
-
-    # Remove NaN mappings
-    ratings_df = ratings_df.dropna().astype(int)
 
     # Debugging Info
     print("\n📊 *Data Distribution* 📊")
@@ -448,6 +449,12 @@ def NMF_SVD(request):
         recommended_attractions = attractions_df[attractions_df["_id"].isin(real_ids)]
         return recommended_attractions[["name", "categories"]]
 
+    def get_attraction_by_collection_index(index: int):
+        cursor = attractions_db.find().skip(index).limit(1)
+        if cursor.count() == 0:
+            return None
+        return cursor.next()
+
     # Recommend similar attractions to a given attraction
     def recommend_similar_attractions(attraction_id, model, top_n=5):
         if not hasattr(model, 'qi'):
@@ -455,6 +462,8 @@ def NMF_SVD(request):
             return pd.DataFrame()
 
         attraction_idx = attraction_ids.get(attraction_id, None)
+        print("id index", attraction_idx)
+
         if attraction_idx is None:
             print(f"⚠ Attraction ID {attraction_id} not found!")
             return pd.DataFrame()
@@ -478,7 +487,23 @@ def NMF_SVD(request):
         similarities.sort(key=lambda x: x[1], reverse=True)
         top_indices = [idx for idx, sim in similarities[:top_n]]
         real_ids = [inv_attraction_ids[iid] for iid in top_indices]
+            
+        for i, iid in enumerate(top_indices):
+            attraction_id = inv_attraction_ids[iid]
+            
+            # Get by recommendation position
+            rec_position_attraction = get_attraction_by_collection_index(i)
+            
+            df_attraction = attractions_df[attractions_df["_id"] == attraction_id].iloc[0]
+            
+            similar_attractions.append({
+                "position": i,
+                "id": str(attraction_id),
+                "name": df_attraction['name'],
+                "categories": df_attraction['categories']
+            })
         similar_attractions = attractions_df[attractions_df["_id"].isin(real_ids)]
+
         return similar_attractions[["name", "categories"]]
 
     # Fallback using content-based (category match)
@@ -490,17 +515,13 @@ def NMF_SVD(request):
         similar = attractions_df[attractions_df["categories"].apply(lambda c: any(cat in c for cat in cats))]
         return similar[["name", "categories"]].head(top_n)
 
-    # Example: Recommend for a user
-    test_user = list(user_ids.keys())[0]
-    user_recommendations = recommend_attractions(test_user, model_to_use, attractions_df, top_n=5)
-    print("\n🔹 *User-Based Recommended Attractions* 🔹")
-    print(user_recommendations)
-
     # Example: Recommend based on attraction
-    test_attraction = list(attraction_ids.keys())[146]  # Example attraction_id
+    test_attraction = list(attraction_ids.keys())[4]
     similar_attractions = recommend_similar_attractions(test_attraction, model_to_use, top_n=5)
     print(f"\n🔸 *Attractions Similar to '{test_attraction}'* 🔸")
     print(similar_attractions)
+
+    return JsonResponse({"attractions": json_util.dumps(similar_attractions)})
 
 
 @csrf_exempt
@@ -805,6 +826,102 @@ def pearson_similarity(request):
             'user_id': target_user_id,
             'user_name': user.get('fname', '') if user else '',
             'recommendations': attraction_details
+        }
+        
+        return JsonResponse(response_data)
+    
+    except Exception as e:
+        return JsonResponse({'error': str(e)}, status=500)
+
+
+def pearson_similarity2(request):
+    # Parse request data
+    if request.content_type == 'application/json':
+        try:
+            data = json.loads(request.body.decode('utf-8'))
+        except json.JSONDecodeError:
+            return JsonResponse({'error': 'Invalid JSON data'}, status=400)
+        
+    elif request.method == 'GET':
+        data = request.GET
+
+    elif request.method == 'POST':
+        data = request.POST
+
+    try:
+        target_item_id = data['attraction_id']
+            
+        attractions = list(attractions_db.find({}))
+        
+        if not attractions:
+            return JsonResponse({'error': 'No attractions found in database'}, status=404)
+        
+        # Find target attraction
+        target_attraction = None
+        other_attractions = []
+        for attraction in attractions:
+            if str(attraction['_id']) == target_item_id:
+                target_attraction = attraction
+            else:
+                other_attractions.append(attraction)
+        
+        if not target_attraction:
+            return JsonResponse({'error': f'Target attraction {target_item_id} not found'}, status=404)
+        
+        # Prepare category features
+        attraction_features = []
+        attraction_ids = []
+        
+        # First add all other attractions
+        for attraction in other_attractions:
+            categories = attraction.get('categories', [])
+            if not isinstance(categories, list):
+                categories = [str(categories)] if categories else []
+            else:
+                categories = [str(c) for c in categories]
+            attraction_features.append(' '.join(categories))
+            attraction_ids.append(str(attraction['_id']))
+        
+        # Then add target attraction's categories (for comparison only)
+        target_categories = target_attraction.get('categories', [])
+        if not isinstance(target_categories, list):
+            target_categories = [str(target_categories)] if target_categories else []
+        else:
+            target_categories = [str(c) for c in target_categories]
+        target_feature = ' '.join(target_categories)
+        
+        # Create TF-IDF vectors (including target for comparison)
+        vectorizer = TfidfVectorizer()
+        all_features = attraction_features + [target_feature]
+        tfidf_matrix = vectorizer.fit_transform(all_features)
+        
+        # Calculate similarity between target and others
+        target_vector = tfidf_matrix[-1]
+        other_vectors = tfidf_matrix[:-1]
+        similarity_scores = cosine_similarity(target_vector, other_vectors)[0]
+        
+        # Pair scores with attraction IDs and sort
+        scored_attractions = zip(attraction_ids, similarity_scores)
+        sorted_attractions = sorted(scored_attractions, key=lambda x: x[1], reverse=True)
+        
+        # Get top 5 similar attractions
+        top_attractions = sorted_attractions[:10]
+        
+        # Prepare response
+        attractions = []
+        for attraction_id, score in top_attractions:
+            attraction = next(a for a in other_attractions if str(a['_id']) == attraction_id)
+            attractions.append({
+                'attraction_id': attraction_id,
+                'name': attraction.get('name', ''),
+                'description': attraction.get('description', ''),
+                'image':attraction.get('image', ''),
+                'city':attraction.get('city', ''),
+                'categories': attraction.get('categories', [])
+            })
+        
+        response_data = {            
+            'attractions': attractions,      
         }
         
         return JsonResponse(response_data)
