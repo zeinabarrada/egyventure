@@ -25,9 +25,31 @@ def get_all_cities(request):
     if not client or not attractions_db:
         return JsonResponse({"error": "db not connected"})
     
-    # Use distinct to get unique city values directly from MongoDB
     try:
-        cities = attractions_db.distinct("city")
+        # Pipeline to:
+        # 1. Group by city and count attractions
+        # 2. Filter cities with at least 5 attractions
+        pipeline = [
+            {"$group": {
+                "_id": {"$trim": {"input": "$city"}},  # Remove whitespace from city names
+                "count": {"$sum": 1}
+            }},
+            {"$match": {
+                "count": {"$gte": 5},
+                "_id": {"$ne": None, "$ne": ""}  # Exclude empty or null cities
+            }},
+            {"$project": {
+                "city": "$_id",
+                "_id": 0
+            }}
+        ]
+        
+        # Execute aggregation pipeline
+        cities_with_counts = list(attractions_db.aggregate(pipeline))
+        
+        # Extract just the city names
+        cities = [item["city"] for item in cities_with_counts]
+        
         return JsonResponse({'cities': cities})
     except Exception as e:
         return JsonResponse({"error": str(e)}, status=500)
@@ -478,8 +500,6 @@ def NMF_SVD(request):
 @csrf_exempt
 def get_must_see(request):
     try:
-        
-        rating_threshold = 4
         min_reviews = 1000
 
         df = pd.DataFrame(list(attractions_db.find({})))        
