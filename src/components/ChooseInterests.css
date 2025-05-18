@@ -12,12 +12,37 @@ h2 {
   font-size: 36px;
   font-weight: bold;
   color: #604d4d;
-  margin: 30px auto 5px;
-  padding: 90px 0; /* Adjusted padding */
+  margin: 0 auto;
+  padding: 90px 0;
   width: 100%;
   z-index: 10;
 }
+.interests-container {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+  gap: 1rem;
+  max-width: 1000px;
+  margin: 0 auto 2rem;
+  padding: 1rem;
+  height: 500px; /* Fixed height to show exactly 5 rows */
+  overflow-y: auto; /* Enable vertical scrolling */
+  scrollbar-width: thin; /* For Firefox */
+  scrollbar-color: #c4b5a3 #f1e9e0; /* For Firefox */
+}
+/* Custom scrollbar for Webkit browsers */
+.interests-container::-webkit-scrollbar {
+  width: 8px;
+}
 
+.interests-container::-webkit-scrollbar-track {
+  background: #f1e9e0;
+  border-radius: 10px;
+}
+
+.interests-container::-webkit-scrollbar-thumb {
+  background-color: #c4b5a3;
+  border-radius: 10px;
+}
 /* Interests container */
 .interests-container {
   display: grid;
@@ -32,34 +57,48 @@ h2 {
 /* Styling for each button */
 button {
   background-color: #fff;
-  border: 2px solid #ddd;
-  border-radius: 25px;
-  color: #333;
-  padding: 10px 10px;
-  font-size: 20px;
+  border: 2px solid #e0d7cd;
+  border-radius: 30px;
+  color: #5a3921;
+  padding: 0.8rem 1rem;
+  font-size: 1rem;
   cursor: pointer;
   text-align: center;
-  transition: background-color 0.3s ease, color 0.3s ease;
-  box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+  transition: all 0.25s ease;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05);
+  min-height: 60px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  word-break: break-word;
+  line-height: 1.4;
 }
 
 .submit-container {
   display: flex;
   justify-content: center;
-  margin-top: 20px; /* Adds spacing */
+  margin: 2rem 0;
+  grid-column: 1 / -1;
+  position: sticky;
+  bottom: 0;
+  background: linear-gradient(to top, #f9f5f0 50%, transparent 100%);
+  padding-top: 1rem;
+  z-index: 1;
 }
 
 button.submit-btn {
-  padding: 12px 24px;
-  font-size: 18px;
+  padding: 0.8rem 2.5rem;
+  font-size: 1.1rem;
   background-color: #8f5725;
   color: white;
   border: none;
-  border-radius: 25px;
+  border-radius: 30px;
   cursor: pointer;
-  transition: all 0.3s ease-in-out;
+  transition: all 0.3s ease;
+  letter-spacing: 0.5px;
+  font-weight: 600;
+  box-shadow: 0 4px 6px rgba(143, 87, 37, 0.2);
 }
-
 button.submit-btn:hover {
   background-color: #965c2d;
   transform: scale(1.05);

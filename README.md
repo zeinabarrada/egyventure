@@ -1,70 +1,95 @@
-# Getting Started with Create React App
+# EgyVenture
 
-This project was bootstrapped with [Create React App](https://github.com/facebook/create-react-app).
+EgyVenture is a full-stack travel recommendation web application for exploring must-see attractions in Egypt. It features personalized recommendations, user authentication, and interactive UI components.
 
-## Available Scripts
+## Features
 
-In the project directory, you can run:
+- **Personalized Recommendations:** Content-based and collaborative filtering for attractions.
+- **User Authentication:** Sign up, login, and persistent sessions.
+- **Like & Rate Attractions:** Users can like and rate attractions, influencing recommendations.
+- **City-Based Browsing:** Explore attractions grouped by city, with sliders and "View All" options.
+- **Responsive UI:** Modern, mobile-friendly design using React and Bootstrap.
+- **Backend API:** Django REST API with MongoDB for flexible data storage.
 
-### `npm start`
+## Tech Stack
 
-Runs the app in the development mode.\
-Open [http://localhost:3000](http://localhost:3000) to view it in your browser.
+- **Frontend:** React, React Router, Axios, Bootstrap, React Icons, React Slick
+- **Backend:** Django 5, Django REST Framework, Djongo, MongoDB
+- **Authentication:** Custom (session/localStorage)
+- **Other:** CORS, RESTful API, modular component structure
 
-The page will reload when you make changes.\
-You may also see any lint errors in the console.
+## Getting Started
 
-### `npm test`
+### Prerequisites
 
-Launches the test runner in the interactive watch mode.\
-See the section about [running tests](https://facebook.github.io/create-react-app/docs/running-tests) for more information.
+- Node.js & npm
+- Python 3.x
+- MongoDB
 
-### `npm run build`
+### Frontend Setup
 
-Builds the app for production to the `build` folder.\
-It correctly bundles React in production mode and optimizes the build for the best performance.
+```bash
+cd <egyventure>
+npm install
+npm start
+```
 
-The build is minified and the filenames include the hashes.\
-Your app is ready to be deployed!
+Runs the React app at [http://localhost:3000](http://localhost:3000).
 
-See the section about [deployment](https://facebook.github.io/create-react-app/docs/deployment) for more information.
+### Backend Setup
 
-### `npm run eject`
+```bash
+cd egyventure_backend
+pip install -r requirements.txt  # (create this if missing)
+python manage.py migrate
+python manage.py runserver
+```
 
-**Note: this is a one-way operation. Once you `eject`, you can't go back!**
+Runs the Django API at [http://127.0.0.1:8000](http://127.0.0.1:8000).
 
-If you aren't satisfied with the build tool and configuration choices, you can `eject` at any time. This command will remove the single build dependency from your project.
+### MongoDB
 
-Instead, it will copy all the configuration files and the transitive dependencies (webpack, Babel, ESLint, etc) right into your project so you have full control over them. All of the commands except `eject` will still work, but they will point to the copied scripts so you can tweak them. At this point you're on your own.
+Ensure MongoDB is running locally on the default port (`mongodb://localhost:27017/`).
 
-You don't have to ever use `eject`. The curated feature set is suitable for small and middle deployments, and you shouldn't feel obligated to use this feature. However we understand that this tool wouldn't be useful if you couldn't customize it when you are ready for it.
+## Project Structure
 
-## Learn More
+```
+egyventure/
+├── src/
+│   ├── components/
+│   │   ├── ContentBasedRec/
+│   │   ├── Registration/
+│   │   └── ...
+│   ├── App.js
+│   └── ...
+├── egyventure_backend/
+│   ├── app/
+│   ├── egyventure_backend/
+│   └── ...
+├── public/
+├── package.json
+└── README.md
+```
 
-You can learn more in the [Create React App documentation](https://facebook.github.io/create-react-app/docs/getting-started).
+## Key Scripts
 
-To learn React, check out the [React documentation](https://reactjs.org/).
+- `npm start` – Start React development server
+- `npm run build` – Build frontend for production
+- `python manage.py runserver` – Start Django backend
 
-### Code Splitting
+## API Endpoints
 
-This section has moved here: [https://facebook.github.io/create-react-app/docs/code-splitting](https://facebook.github.io/create-react-app/docs/code-splitting)
+- `/signup/`, `/login/` – User registration & login
+- `/get_attractions/` – List attractions
+- `/add_to_likes/`, `/remove_from_likes/`, `/view_likes/` – Like system
+- `/rate/`, `/view_ratings/` – Rating system
+- `/pearson_similarity/` – Collaborative recommendations
 
-### Analyzing the Bundle Size
+## Customization
 
-This section has moved here: [https://facebook.github.io/create-react-app/docs/analyzing-the-bundle-size](https://facebook.github.io/create-react-app/docs/analyzing-the-bundle-size)
+- Add new attractions via the backend or database.
+- Adjust recommendation logic in backend `views.py`.
 
-### Making a Progressive Web App
+## License
 
-This section has moved here: [https://facebook.github.io/create-react-app/docs/making-a-progressive-web-app](https://facebook.github.io/create-react-app/docs/making-a-progressive-web-app)
-
-### Advanced Configuration
-
-This section has moved here: [https://facebook.github.io/create-react-app/docs/advanced-configuration](https://facebook.github.io/create-react-app/docs/advanced-configuration)
-
-### Deployment
-
-This section has moved here: [https://facebook.github.io/create-react-app/docs/deployment](https://facebook.github.io/create-react-app/docs/deployment)
-
-### `npm run build` fails to minify
-
-This section has moved here: [https://facebook.github.io/create-react-app/docs/troubleshooting#npm-run-build-fails-to-minify](https://facebook.github.io/create-react-app/docs/troubleshooting#npm-run-build-fails-to-minify)
+MIT (or specify your license)

@@ -14,22 +14,19 @@ export default function ChooseInterests() {
     "atv & off-road",
     "balloon rides",
     "ski & snow",
-    "skydiving",
-    "climbing",
-    "horse-drawn carriage",
-    "horseback riding",
+
     "kayaking & canoeing",
     "safaris",
     "hiking & camping",
 
     "ancient ruins",
-    "architectural buildings",
+
     "monuments & statues",
     "museums",
     "points of interest & landmarks",
     "sacred & religious sites",
     "sights & landmarks",
-    "sightseeing",
+
     "historic sites",
     "historical & heritage",
     "history museums",
@@ -40,9 +37,8 @@ export default function ChooseInterests() {
     "art museums",
     "cultural",
     "libraries",
-    "night",
+
     "nightlife",
-    "spas",
     "spas & wellness",
 
     "farmers markets",
@@ -56,7 +52,7 @@ export default function ChooseInterests() {
     "zoos & aquariums",
     "mountains",
     "deserts",
-    "islands",
+
     "archaeology",
 
     "submarine",
@@ -66,15 +62,13 @@ export default function ChooseInterests() {
     "scuba & snorkeling",
     "shark diving",
     "water & amusement parks",
-    "water parks",
+
     "water sports",
     "waterskiing & jet skiing",
     "beaches",
     "boat  & water sports",
     "bodies of water",
     "windsurfing & kitesurfing",
-    "canyoning & rappelling",
-    "marinas",
   ];
 
   const [selectedInterests, setSelectedInterests] = useState([]);
@@ -100,7 +94,6 @@ export default function ChooseInterests() {
       );
 
       if (response.status === 200) {
-        alert("Interests submitted successfully!");
         navigate("/homepage");
       } else {
         alert("Failed to submit interests.");

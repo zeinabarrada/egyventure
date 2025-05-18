@@ -30,15 +30,19 @@
   ); /* Adjust the opacity (0.5 for 50% black tint) */
   z-index: 1;
 }
-
 .hero-content {
   text-align: center;
   max-width: 800px;
-  padding: 20px;
-  color: #fff; /* Change color based on your text needs */
-  text-shadow: 0 2px 4px rgba(0, 0, 0, 0.3);
+  padding: 40px 20px; /* More top-bottom spacing */
+  color: #fff;
+  text-shadow: 0 2px 4px rgba(0, 0, 0, 0.4);
   position: relative;
   z-index: 2;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 20px; /* Adds spacing between elements */
 }
 
 .home-section h1 {
@@ -49,7 +53,7 @@
 }
 
 .hero-text {
-  font-size: 1.25rem;
+  font-size: 1.5rem;
   margin-bottom: 2rem;
   line-height: 1.6;
   max-width: 600px;
@@ -59,7 +63,7 @@
 
 .cta-button {
   padding: 1rem 2rem;
-  font-size: 1.1rem;
+  font-size: 1.2rem;
   background-color: #8f5725; /* Change to your brand color */
   color: white;
   border: none;

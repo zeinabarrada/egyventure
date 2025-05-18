@@ -73,7 +73,8 @@ const AttractionDetail = () => {
           params: { attraction_id: id },
         }
       );
-      setRecommendations(response.data.recommendations || []);
+
+      setRecommendations(response.data.attractions || []);
     } catch (error) {
       console.error("Error fetching recommendations:", error);
     }
@@ -104,7 +105,6 @@ const AttractionDetail = () => {
         }));
         setShowRecommendations(true);
         await fetchRecommendations();
-        alert("Rating submitted successfully!");
       } else {
         throw new Error(response.data.message || "Failed to submit rating");
       }
@@ -190,18 +190,17 @@ const AttractionDetail = () => {
           {renderRatingInput()}
 
           <p className="full-description">{attraction.description}</p>
-
-          {(hasRated || showRecommendations) && recommendations.length > 0 && (
-            <div className="recommendations-section">
-              <AttractionsSlider
-                title="You might also like"
-                items={recommendations}
-                userId={userId}
-              />
-            </div>
-          )}
         </div>
       </div>
+      {(hasRated || showRecommendations) && recommendations.length > 0 && (
+        <div className="recommendations-section">
+          <AttractionsSlider
+            title="You might also like"
+            items={recommendations}
+            userId={userId}
+          />
+        </div>
+      )}
     </section>
   );
 };
