@@ -152,3 +152,424 @@
 .recommendations-section {
   margin-top: 3rem;
 }
+
+/* New layout styles for AttractionDetail */
+.attraction-detail-new {
+  width: 100%;
+  background: #fff;
+  border-radius: 12px;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.04);
+  margin: 0 auto 2rem auto;
+  overflow: hidden;
+  font-family: "Segoe UI", Arial, sans-serif;
+}
+
+.header-image-container {
+  position: relative;
+  width: 100%;
+  height: 350px;
+  overflow: hidden;
+}
+
+.header-image {
+  width: 100%;
+  height: 350px;
+  object-fit: cover;
+  display: block;
+}
+
+.header-overlay {
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: linear-gradient(
+    180deg,
+    rgba(0, 0, 0, 0.25) 60%,
+    rgba(0, 0, 0, 0.5) 100%
+  );
+  display: flex;
+  align-items: flex-end;
+  padding: 2rem 3rem;
+}
+
+.header-content {
+  color: #fff;
+  z-index: 2;
+}
+
+.header-rating {
+  margin-bottom: 0.5rem;
+}
+.star-badge {
+  background: #ffd700;
+  color: #222;
+  font-weight: bold;
+  padding: 0.3rem 1rem;
+  border-radius: 999px;
+  font-size: 1.1rem;
+  display: inline-flex;
+  align-items: center;
+  gap: 0.5rem;
+}
+.header-title {
+  font-size: 2.7rem;
+  font-weight: bold;
+  margin: 0.2rem 0 0.5rem 0;
+}
+.header-location {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  font-size: 1.2rem;
+  color: #e0f0ff;
+}
+
+.main-content-layout {
+  display: flex;
+  gap: 2.5rem;
+  padding: 2.5rem 3rem 1.5rem 3rem;
+  max-width: 1300px;
+  margin: 0 auto;
+}
+
+.main-content-left {
+  flex: 2;
+  min-width: 0;
+}
+.main-content-right {
+  flex: 1;
+  min-width: 320px;
+  display: flex;
+  flex-direction: column;
+  gap: 2rem;
+}
+
+.photos-section h2,
+.recommendations-section h2 {
+  font-size: 1.5rem !important;
+  font-weight: bold !important;
+  margin-bottom: 0.7rem !important;
+}
+.full-description {
+  font-size: 1.15rem;
+  line-height: 1.7;
+}
+
+.photos-section {
+  margin-bottom: 2rem;
+}
+.photos-gallery {
+  display: flex;
+  gap: 1.2rem;
+  margin-bottom: 0.5rem;
+}
+.gallery-photo {
+  width: 200px;
+  height: 130px;
+  object-fit: cover;
+  border-radius: 8px;
+  box-shadow: 0 1px 4px rgba(0, 0, 0, 0.08);
+  background: #f5f5f5;
+}
+
+.practical-info-card {
+  background: #faf7f2;
+  border-radius: 10px;
+  box-shadow: 0 1px 4px rgba(0, 0, 0, 0.04);
+  padding: 1.5rem 1.2rem;
+  margin-bottom: 1.5rem;
+}
+.practical-info-card h3 {
+  font-size: 1.2rem;
+  font-weight: bold;
+  margin-bottom: 1rem;
+}
+.practical-info-item {
+  display: flex;
+  justify-content: space-between;
+  margin-bottom: 0.7rem;
+  font-size: 1rem;
+}
+.practical-info-item a {
+  color: #0077cc;
+  text-decoration: underline;
+}
+
+.map-card {
+  background: #faf7f2;
+  border-radius: 10px;
+  box-shadow: 0 1px 4px rgba(0, 0, 0, 0.04);
+  padding: 1.5rem 1.2rem;
+}
+.map-card h3 {
+  font-size: 1.2rem;
+  font-weight: bold;
+  margin-bottom: 1rem;
+}
+.map-embed {
+  width: 100%;
+  height: 200px;
+  margin-bottom: 0.7rem;
+  border-radius: 8px;
+  overflow: hidden;
+  background: #e0e0e0;
+}
+.address {
+  font-size: 1rem;
+  color: #555;
+}
+
+.rating-section {
+  margin-top: 2rem;
+  margin-bottom: 2rem;
+}
+
+.recommendations-section {
+  margin: 2.5rem 3rem 2rem 3rem;
+}
+
+/* Responsive styles */
+@media (max-width: 1000px) {
+  .main-content-layout {
+    flex-direction: column;
+    gap: 2rem;
+    padding: 2rem 1rem 1rem 1rem;
+  }
+  .main-content-right {
+    min-width: 0;
+  }
+  .header-overlay {
+    padding: 1.2rem 1rem;
+  }
+  .recommendations-section {
+    margin: 2rem 1rem 1rem 1rem;
+  }
+}
+
+@media (max-width: 700px) {
+  .header-image-container,
+  .header-image {
+    height: 180px;
+  }
+  .header-title {
+    font-size: 1.3rem;
+  }
+  .main-content-layout {
+    padding: 1rem 0.2rem;
+  }
+  .recommendations-section {
+    margin: 1rem 0.2rem;
+  }
+  .gallery-photo {
+    width: 100px;
+    height: 70px;
+  }
+}
+
+/* Make header image much taller and immersive */
+.header-image-container.large,
+.header-image.large {
+  height: 480px;
+  min-height: 320px;
+  max-height: 520px;
+}
+.header-image.large {
+  width: 100%;
+  object-fit: cover;
+  border-radius: 0;
+}
+.header-overlay.large {
+  padding: 3.5rem 5vw 2.5rem 5vw;
+  align-items: flex-end;
+}
+.header-content.large {
+  width: 100%;
+  text-align: left;
+}
+.header-title.large {
+  font-size: 3.2rem;
+  font-weight: 900;
+  margin-bottom: 0.7rem;
+  letter-spacing: 0.5px;
+}
+.header-location.large {
+  font-size: 1.5rem;
+  font-weight: 600;
+  margin-bottom: 1.2rem;
+  color: #e0f0ff;
+}
+.star-badge.large {
+  font-size: 1.4rem;
+  padding: 0.5rem 1.5rem;
+  border-radius: 999px;
+  background: #ffd700;
+  color: #222;
+  font-weight: bold;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+  margin-bottom: 1.2rem;
+  display: inline-flex;
+  align-items: center;
+  gap: 0.7rem;
+}
+
+/* Visualize the rating input in the header */
+.header-rating-input {
+  margin-top: 1.5rem;
+  background: rgba(255, 255, 255, 0.92);
+  border-radius: 1rem;
+  padding: 1.2rem 2.2rem;
+  box-shadow: 0 2px 12px rgba(0, 0, 0, 0.1);
+  display: inline-block;
+  min-width: 320px;
+}
+.header-rating-input .rating-input h3 {
+  font-size: 1.3rem;
+  color: #222;
+  margin-bottom: 0.5rem;
+}
+.header-rating-input .stars-input {
+  font-size: 2.2rem;
+  gap: 0.5rem;
+}
+.header-rating-input .submit-rating-button {
+  margin-top: 0.7rem;
+  font-size: 1.1rem;
+  padding: 0.5rem 1.5rem;
+}
+.header-rating-input .previous-rating h3,
+.header-rating-input .rated-stars {
+  font-size: 1.5rem;
+}
+
+.about-section.card {
+  background: #fff8f0;
+  border-radius: 14px;
+  box-shadow: 0 2px 12px rgba(0, 0, 0, 0.07);
+  padding: 1.2rem 1.5rem;
+  margin-bottom: 2.5rem;
+  max-width: 700px;
+
+  margin-left: auto;
+  margin-right: auto;
+  text-align: left;
+}
+.about-section.card h2 {
+  font-size: 1.7rem !important;
+  font-weight: 800 !important;
+  margin-bottom: 1.1rem;
+  text-align: left;
+}
+.full-description {
+  font-size: 1.13rem;
+  line-height: 1.7;
+  color: #3a2c1a;
+  text-align: left;
+  margin-top: -5rem;
+}
+
+/* Sidebar wider and more readable */
+.main-content-right.wide {
+  min-width: 380px;
+  max-width: 500px;
+  flex: 1.2;
+  gap: 2.5rem;
+}
+.practical-info-card.large,
+.map-card.large {
+  font-size: 1.15rem;
+  padding: 2rem 1.5rem 1.5rem 1.5rem;
+  border-radius: 14px;
+  box-shadow: 0 2px 12px rgba(0, 0, 0, 0.07);
+  background: #faf7f2;
+  margin-bottom: 2rem;
+}
+.practical-info-card.large h3,
+.map-card.large h3 {
+  font-size: 1.3rem;
+  font-weight: 800;
+  margin-bottom: 1.2rem;
+}
+.practical-info-item.large {
+  font-size: 1.13rem;
+  margin-bottom: 1rem;
+}
+.address.large {
+  font-size: 1.1rem;
+  color: #444;
+  margin-top: 0.7rem;
+}
+.map-embed.large {
+  height: 250px;
+  border-radius: 10px;
+  overflow: hidden;
+}
+
+/* More spacing between sections */
+.main-content-layout {
+  gap: 3.5rem;
+  padding-bottom: 2.5rem;
+}
+.photos-section {
+  margin-bottom: 2.5rem;
+}
+.recommendations-section {
+  margin-top: 3.5rem;
+  margin-bottom: 2.5rem;
+}
+
+/* Responsive tweaks */
+@media (max-width: 1200px) {
+  .header-image-container.large,
+  .header-image.large {
+    height: 340px;
+  }
+  .main-content-right.wide {
+    min-width: 0;
+    max-width: 100%;
+  }
+}
+@media (max-width: 900px) {
+  .header-image-container.large,
+  .header-image.large {
+    height: 220px;
+  }
+  .header-title.large {
+    font-size: 1.7rem;
+  }
+  .header-location.large {
+    font-size: 1.1rem;
+  }
+  .main-content-layout {
+    flex-direction: column;
+    gap: 2rem;
+    padding: 1.2rem 0.5rem 1rem 0.5rem;
+  }
+  .main-content-right.wide {
+    min-width: 0;
+    max-width: 100%;
+  }
+  .about-section.card {
+    padding: 1.2rem 0.7rem 1rem 0.7rem;
+  }
+}
+@media (max-width: 600px) {
+  .header-image-container.large,
+  .header-image.large {
+    height: 120px;
+  }
+  .header-title.large {
+    font-size: 1.1rem;
+  }
+  .header-rating-input {
+    min-width: 0;
+    padding: 0.7rem 0.5rem;
+  }
+  .main-content-layout {
+    padding: 0.5rem 0.1rem;
+  }
+  .about-section.card {
+    padding: 0.7rem 0.2rem 0.7rem 0.2rem;
+  }
+}

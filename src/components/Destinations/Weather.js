@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from "react";
-import { FaTemperatureHigh, FaWater, FaWind, FaCloud } from "react-icons/fa";
+import { FaTemperatureHigh, FaCloud } from "react-icons/fa";
 import "./Weather.css";
 const WeatherDisplay = ({ city }) => {
   const [weather, setWeather] = useState(null);
