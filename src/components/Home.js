@@ -6,11 +6,13 @@ import AttractionsSlider from "./ContentBasedRec/AttractionSlider";
 import axios from "axios";
 import { useAuth } from "./Registration/AuthContext";
 import "./ContentBasedRec/Card.css";
+
 export default function Home() {
   const [attractions, setAttractions] = useState([]);
   const [visibleCities, setVisibleCities] = useState(3);
   const { user } = useAuth();
   const userId = user?.id;
+  
   useEffect(() => {
     const fetchAttractions = async () => {
       try {

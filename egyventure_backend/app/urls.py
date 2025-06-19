@@ -1,7 +1,7 @@
 from django.urls import path
 from . import views
 
-urlpatterns = [
+urlpatterns = [        
     path('get_all_cities/', views.get_all_cities, name='get_all_cities'),
     path('signup/', views.signup, name='signup'),
     path('login/', views.login, name='login'),
@@ -18,6 +18,9 @@ urlpatterns = [
     path('rate/', views.rate, name='rate'),
     path('post_interests/', views.post_interests, name='post_interests'),
     path('view_ratings/', views.view_ratings, name='view_ratings'),
+    path('add_review/', views.add_review, name='add_review'),
+    path('edit_review/', views.edit_review, name='edit_review'),
+    path('delete_review/', views.delete_review, name='delete_review'),
     
     path('word2vec/', views.word2vec_recommendations, name='word2vec'),
     path('pearson_similarity/', views.pearson_similarity2, name='pearson_similarity'),

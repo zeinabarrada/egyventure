@@ -1,4 +1,3 @@
-from django.conf import settings
 from collections import defaultdict
 import pandas as pd
 import numpy as np
@@ -19,12 +18,13 @@ from bson import ObjectId
 import json
 from django.http import JsonResponse
 
-""" Remove these lines to the beginning of each view, and close client after use """
+""" move these lines to the beginning of each view, and close client after use """
 client = MongoClient('mongodb://localhost:27017/')
 db = client['db']
 users_db = db['users']
 attractions_db = db['attractions']
 ratings_db = db['ratings']
+reviews_db = db['reviews']
 
 @csrf_exempt
 def get_all_cities(request):
@@ -133,20 +133,7 @@ def login(request):
 
 @csrf_exempt
 def get_attractions(request):
-    try:
-        # Handle different request methods and content types
-        if request.content_type == 'application/json':
-            try:
-                data = json.loads(request.body.decode('utf-8'))
-            except json.JSONDecodeError:
-                return JsonResponse({'error': 'Invalid JSON data'}, status=400)
-        elif request.method == 'GET':
-            data = request.GET
-        elif request.method == 'POST':
-            data = request.POST
-
-
-
+    try:       
         # Query with pagination and projection
         attractions = list(attractions_db.find({}).limit(1000)) 
 
@@ -161,7 +148,6 @@ def get_attractions(request):
         return JsonResponse({
             'status': 'success',
             'data': result,
-           
         }, safe=False)
 
     except ValueError as e:
@@ -1025,3 +1011,65 @@ def filter_city(request):
         
     except Exception as e:
         return JsonResponse({'error': str(e)}, status=500)
+
+
+@csrf_exempt
+def add_review(request):
+    if request.method != 'POST':
+        return JsonResponse({'error': 'Invalid request method'}, status=405)
+        
+    data = json.loads(request.body)
+    attraction_id = data['attraction_id']
+    user_id = data['user_id']
+    review = data['review']
+    
+    if reviews_db.find_one({'attraction_id': attraction_id, 'user_id': user_id}):
+        return JsonResponse({'error': 'Review already exists'}, status=400)
+    
+    reviews_db.insert_one({
+        'attraction_id': attraction_id,
+        'user_id': user_id,
+        'review': review,
+    })
+    
+    return JsonResponse({'message': 'Review added successfully'}, status=200)
+
+
+@csrf_exempt
+def edit_review(request):
+    if request.method != 'PUT':
+        return JsonResponse({'error': 'Invalid request method'}, status=405)
+    
+    data = json.loads(request.body)
+    review_id = data['review_id']
+    review = data['review']
+    
+    if not reviews_db.find_one({'_id': ObjectId(review_id)}):
+        return JsonResponse({'error': 'Review not found'}, status=404)
+    
+    reviews_db.update_one(
+        {'_id': ObjectId(review_id)},
+        {'$set': {'review': review}}
+    )
+    
+    return JsonResponse({'message': 'Review updated successfully'}, status=200)
+
+
+@csrf_exempt
+def delete_review(request):
+    if request.method != 'DELETE':
+        return JsonResponse({'error': 'Invalid request method'}, status=405)
+    
+    data = json.loads(request.body)
+    review_id = data['review_id']
+    
+    if not reviews_db.find_one({'_id': ObjectId(review_id)}):
+        return JsonResponse({'error': 'Review not found'}, status=404)
+    
+    reviews_db.delete_one({'_id': ObjectId(review_id)})
+    
+    return JsonResponse({'message': 'Review deleted successfully'}, status=200)
+
+
+
+
