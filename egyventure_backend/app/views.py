@@ -1019,20 +1019,33 @@ def add_review(request):
         return JsonResponse({'error': 'Invalid request method'}, status=405)
         
     data = json.loads(request.body)
-    attraction_id = data['attraction_id']
-    user_id = data['user_id']
-    review = data['review']
+    attraction_id = data.get('attraction_id')
+    user_id = data.get('user_id')
+    review_text = data.get('review')
+
+    if not all([attraction_id, user_id, review_text]):
+        return JsonResponse({'error': 'attraction_id, user_id, and review are required'}, status=400)
+
+    try:
+        user_object_id = ObjectId(user_id)
+    except:
+        return JsonResponse({'error': 'Invalid user ID format'}, status=400)
+
+    user = users_db.find_one({'_id': user_object_id})
+    if not user:
+        return JsonResponse({'error': 'User not found'}, status=404)
     
     if reviews_db.find_one({'attraction_id': attraction_id, 'user_id': user_id}):
-        return JsonResponse({'error': 'Review already exists'}, status=400)
+        return JsonResponse({'error': 'Review already exists for this user and attraction'}, status=400)
     
     reviews_db.insert_one({
         'attraction_id': attraction_id,
         'user_id': user_id,
-        'review': review,
+        'user_name': user.get('fname', 'Anonymous'),
+        'review': review_text,
     })
     
-    return JsonResponse({'message': 'Review added successfully'}, status=200)
+    return JsonResponse({'message': 'Review added successfully'}, status=201)
 
 
 @csrf_exempt
@@ -1071,5 +1084,32 @@ def delete_review(request):
     return JsonResponse({'message': 'Review deleted successfully'}, status=200)
 
 
+@csrf_exempt
+def get_reviews(request):
+    if request.method != 'GET':
+        return JsonResponse({'error': 'Invalid request method'}, status=405)
+    
+    data = json.loads(request.body)
+    attraction_id = data.get('attraction_id')
+    
+    if not attraction_id:
+        return JsonResponse({'error': 'Attraction ID is required as a query parameter.'}, status=400)
 
+    reviews_cursor = reviews_db.find({'attraction_id': attraction_id})
+    
+    reviews_list = []
+    for review in reviews_cursor:
+        review['_id'] = str(review['_id'])
+        
+        # Backward compatibility for reviews without user_name
+        if 'user_name' not in review:
+            try:
+                user = users_db.find_one({'_id': ObjectId(review['user_id'])})
+                review['user_name'] = user.get('fname', 'Anonymous') if user else 'Anonymous'
+            except Exception:
+                review['user_name'] = 'Anonymous'
+        
+        reviews_list.append(review)
+    
+    return JsonResponse({'reviews': reviews_list}, status=200)
 
