@@ -1,22 +1,17 @@
-from collections import defaultdict
-import pandas as pd
-import numpy as np
-from surprise import NMF, SVD, Dataset, Reader
-from surprise.model_selection import train_test_split
-from gensim.models import Word2Vec
-from sklearn.metrics.pairwise import cosine_similarity
-from sklearn.metrics import f1_score, precision_score, recall_score, accuracy_score
-from django.http import JsonResponse
-from django.views.decorators.csrf import csrf_exempt
-from pymongo import MongoClient
-from bson import ObjectId, json_util
 import json
 import re
-from sklearn.metrics.pairwise import cosine_similarity
-from sklearn.feature_extraction.text import TfidfVectorizer
-from bson import ObjectId
-import json
+import numpy as np
+import pandas as pd
+from bson import ObjectId, json_util
 from django.http import JsonResponse
+from django.views.decorators.csrf import csrf_exempt
+from gensim.models import Word2Vec
+from pymongo import MongoClient
+from sklearn.feature_extraction.text import TfidfVectorizer
+from sklearn.metrics import f1_score, precision_score, recall_score, accuracy_score
+from sklearn.metrics.pairwise import cosine_similarity
+from surprise import NMF, SVD, Dataset, Reader
+from surprise.model_selection import train_test_split
 
 """ move these lines to the beginning of each view, and close client after use """
 client = MongoClient('mongodb://localhost:27017/')
@@ -98,7 +93,9 @@ def signup(request):
         except KeyError as e:            
             return JsonResponse({'error': f'Missing field: {str(e)}'}, status=400)
         except Exception as e:            
-            return JsonResponse({'error': 'An unexpected error occurred. Please try again later.'}, status=500)
+            return JsonResponse({'error': f'An unexpected error occurred. Please try again later. {str(e)}'}, status=500)
+
+    return JsonResponse({'error': 'An unexpected error occurred. Please try again later.'}, status=500)
 
 
 @csrf_exempt
@@ -157,7 +154,8 @@ def get_attractions(request):
 
 @csrf_exempt
 def get_attraction_details(request):    
-    try:            
+    try:
+        data = None
         # Parse request data
         if request.content_type == 'application/json':
             try:
@@ -240,11 +238,13 @@ def post_interests(request):
             return JsonResponse({'status' : 'success'})
         except Exception as e:
             return JsonResponse({'status': 'error', 'message': str(e)}, status=500)
+    return JsonResponse({'error': 'wrong method type'}, status=500)
 
 
 @csrf_exempt
 def word2vec_recommendations(request):
     try:
+        data = None
         # Parse request data
         if request.content_type == 'application/json':
             try:
@@ -473,7 +473,8 @@ def NMF_SVD(request):
         similarities.sort(key=lambda x: x[1], reverse=True)
         top_indices = [idx for idx, sim in similarities[:top_n]]
         real_ids = [inv_attraction_ids[iid] for iid in top_indices]
-            
+
+        similar_attractions = []
         for i, iid in enumerate(top_indices):
             attraction_id = inv_attraction_ids[iid]
             
@@ -695,7 +696,7 @@ def rate(request):
             if not attraction:
                 return JsonResponse({'error': 'Attraction not found'}, status=404)
         except Exception as e:
-            return JsonResponse({'error': 'Error validating user or attraction'}, status=500)
+            return JsonResponse({'error': f'Error validating user or attraction. {str(e)}'}, status=500)
         
         ratings_db.insert_one({
             "user_id": user_id,
@@ -714,113 +715,12 @@ def rate(request):
 
     except Exception as e:        
         return JsonResponse({
-            'error': 'An unexpected error occurred. Please try again later.'
+            'error': f'An unexpected error occurred. Please try again later. {str(e)}'
         }, status=500)
 
 
-@csrf_exempt
-def pearson_similarity(request):     
-    # Parse request data
-    if request.content_type == 'application/json':
-        try:
-            data = json.loads(request.body.decode('utf-8'))
-        except json.JSONDecodeError:
-            return JsonResponse({'error': 'Invalid JSON data'}, status=400)
-    
-    elif request.method == 'GET':
-        data = request.GET
-
-    elif request.method == 'POST':
-        data = request.POST
-
-    try:
-        target_user_id = data['user_id']
-        
-        # Fetch ratings from MongoDB
-        ratings = ratings_db.find({}, {'user_id': 1, 'attraction_id': 1, 'rating': 1, '_id': 0})
-        ratings = list(ratings)
-
-        if not ratings:
-            return JsonResponse({'error': 'No ratings found in database'}, status=404)
-        
-        # Create user-item matrix        
-        df = pd.DataFrame(ratings)
-        user_item_matrix = df.pivot(index='user_id', columns='attraction_id', values='rating')
-        
-        if user_item_matrix.empty:
-            return JsonResponse({'error': 'No data available to process'}, status=404)
-        
-        # Check if target user exists
-        if target_user_id not in user_item_matrix.index:
-            return JsonResponse({'error': f'Target user {target_user_id} not found'}, status=404)
-        
-        # Compute user similarities using Pearson correlation
-        user_similarity_df = user_item_matrix.T.corr(method='pearson').fillna(0)
-        
-        # Extract similarities for the target user
-        target_similarities = user_similarity_df.loc[target_user_id]
-        
-        # Exclude target user and filter out non-positive similarities
-        similar_users = target_similarities.drop(target_user_id).to_dict()
-        similar_users = {user: sim for user, sim in similar_users.items() if sim > 0}
-        
-        if not similar_users:
-            return JsonResponse({'error': f'No similar users found for {target_user_id}'}, status=404)
-        
-        # Identify attractions the target hasn't rated
-        target_rated = user_item_matrix.loc[target_user_id].dropna().index
-        all_attractions = user_item_matrix.columns
-        target_unrated = [att for att in all_attractions if att not in target_rated]
-        
-        # Calculate weighted scores for each unrated attraction
-        attraction_scores = defaultdict(float)
-        
-        for attraction in target_unrated:
-            total_score = 0.0
-            total_weight = 0.0
-            for user, similarity in similar_users.items():
-                user_rating = user_item_matrix.loc[user, attraction]
-                if not pd.isna(user_rating):
-                    total_score += user_rating * similarity
-                    total_weight += similarity
-            if total_weight > 0:
-                attraction_scores[attraction] = total_score / total_weight
-        
-        if not attraction_scores:
-            return JsonResponse({'error': 'No recommendations available'}, status=404)
-        
-        # Sort attractions by their weighted score in descending order
-        sorted_recommendations = sorted(attraction_scores.items(), key=lambda x: -x[1])
-        recommendations = [ObjectId(attraction) for attraction, _ in sorted_recommendations]
-        
-        # Select top 5 recommendations
-        top_recommendations = recommendations[:5]
-        
-        # Get user and attraction details for response
-        user = users_db.find_one({"_id": ObjectId(target_user_id)})
-        attraction_details = []
-        
-        for attraction_id in top_recommendations:
-            attraction = attractions_db.find_one({"_id": attraction_id})
-            if attraction:
-                attraction_details.append({
-                    'id': str(attraction['_id']),
-                    'name': attraction.get('name', '')                    
-                })
-        
-        response_data = {
-            'user_id': target_user_id,
-            'user_name': user.get('fname', '') if user else '',
-            'recommendations': attraction_details
-        }
-        
-        return JsonResponse(response_data)
-    
-    except Exception as e:
-        return JsonResponse({'error': str(e)}, status=500)
-
-
 def pearson_similarity2(request):
+    data = None
     # Parse request data
     if request.content_type == 'application/json':
         try:
@@ -918,6 +818,7 @@ def pearson_similarity2(request):
 
 @csrf_exempt
 def view_ratings(request):
+    data = None
     if request.content_type == 'application/json':
         try:
             data = json.loads(request.body.decode('utf-8'))
@@ -925,8 +826,7 @@ def view_ratings(request):
             return JsonResponse({'error': 'Invalid JSON data'}, status=400)
     elif request.method == 'GET':
         data = request.GET
-    elif request.method == 'POST':
-        data = request.POST
+
     user_id = data['user_id']
     try:
         # Validate user_id format
