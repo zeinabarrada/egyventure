@@ -29,5 +29,5 @@ urlpatterns = [
     path('NMF_SVD/', views.NMF_SVD, name='NMF_SVD'),
 
     path('update_interests/', views.update_interests, name='update_interests'),
-    path('get_user_interests/', views.get_user_interests, name='get_user_interests'),
+    path('account/', views.get_account_details, name='get_account_details'),
 ]
