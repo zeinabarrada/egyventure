@@ -1114,3 +1114,4 @@ def get_account_details(request):
         return JsonResponse({
             'error': f'An error occurred while fetching account details: {str(e)}'
         }, status=500)
+
