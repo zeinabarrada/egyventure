@@ -21,6 +21,7 @@ attractions_db = db['attractions']
 ratings_db = db['ratings']
 reviews_db = db['reviews']
 
+
 @csrf_exempt
 def get_all_cities(request):
     if not client or not attractions_db:
@@ -151,6 +152,7 @@ def get_attractions(request):
         return JsonResponse({'status': 'error', 'message': 'Invalid page or limit value'}, status=400)
     except Exception as e:
         return JsonResponse({'status': 'error', 'message': str(e)}, status=500)
+
 
 @csrf_exempt
 def get_attraction_details(request):    
@@ -1012,4 +1014,114 @@ def get_reviews(request):
         reviews_list.append(review)
     
     return JsonResponse({'reviews': reviews_list}, status=200)
+
+
+@csrf_exempt
+def update_interests(request):
+    """
+    Update user interests - allows users to change their interests after account creation
+    """
+    if request.method != 'POST':
+        return JsonResponse({'error': 'Only POST method is allowed'}, status=405)
+
+    try:
+        # Parse request data
+        if request.content_type == 'application/json':
+            try:
+                data = json.loads(request.body.decode('utf-8'))
+            except json.JSONDecodeError:
+                return JsonResponse({'error': 'Invalid JSON data'}, status=400)
+        else:
+            data = request.POST
+
+        user_id = data.get('user_id')
+        new_interests = data.get('interests')
+
+        # Validate required fields
+        if not user_id:
+            return JsonResponse({'error': 'User ID is required'}, status=400)
+
+        if new_interests is None:
+            return JsonResponse({'error': 'New interests are required'}, status=400)
+
+        # Validate user_id format
+        try:
+            user_oid = ObjectId(user_id)
+        except Exception:
+            return JsonResponse({'error': 'Invalid user ID format'}, status=400)
+
+        # Check if user exists
+        user = users_db.find_one({'_id': user_oid})
+        if not user:
+            return JsonResponse({'error': 'User not found'}, status=404)
+
+        # Update user interests
+        result = users_db.update_one(
+            {'_id': user_oid},
+            {'$set': {'interests': new_interests}}
+        )
+
+        if result.modified_count > 0:
+            return JsonResponse({
+                'success': True,
+                'message': 'Interests updated successfully',
+                'user_id': user_id,
+                'new_interests': new_interests
+            }, status=200)
+        else:
+            return JsonResponse({
+                'success': False,
+                'message': 'No changes made to interests'
+            }, status=200)
+
+    except Exception as e:
+        return JsonResponse({
+            'error': f'An error occurred while updating interests: {str(e)}'
+        }, status=500)
+
+
+@csrf_exempt
+def get_user_interests(request):
+    """ Get current user interests """
+    if request.method != 'GET':
+        return JsonResponse({'error': 'Only GET method is allowed'}, status=405)
+
+    try:
+        # Parse request data
+        if request.content_type == 'application/json':
+            try:
+                data = json.loads(request.body.decode('utf-8'))
+            except json.JSONDecodeError:
+                return JsonResponse({'error': 'Invalid JSON data'}, status=400)
+        else:
+            data = request.GET
+
+        user_id = data.get('user_id')
+
+        if not user_id:
+            return JsonResponse({'error': 'User ID is required'}, status=400)
+
+        # Validate user_id format
+        try:
+            user_oid = ObjectId(user_id)
+        except Exception:
+            return JsonResponse({'error': 'Invalid user ID format'}, status=400)
+
+        # Get user interests
+        user = users_db.find_one({'_id': user_oid}, {'interests': 1, 'fname': 1})
+
+        if not user:
+            return JsonResponse({'error': 'User not found'}, status=404)
+
+        return JsonResponse({
+            'success': True,
+            'user_id': user_id,
+            'user_name': user.get('fname', ''),
+            'interests': user.get('interests', '')
+        }, status=200)
+
+    except Exception as e:
+        return JsonResponse({
+            'error': f'An error occurred while fetching interests: {str(e)}'
+        }, status=500)
 

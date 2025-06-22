@@ -27,4 +27,7 @@ urlpatterns = [
     path('word2vec/', views.word2vec_recommendations, name='word2vec'),
     path('pearson_similarity/', views.pearson_similarity2, name='pearson_similarity'),
     path('NMF_SVD/', views.NMF_SVD, name='NMF_SVD'),
+
+    path('update_interests/', views.update_interests, name='update_interests'),
+    path('get_user_interests/', views.get_user_interests, name='get_user_interests'),
 ]
