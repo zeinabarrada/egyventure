@@ -12,6 +12,7 @@ from sklearn.metrics import f1_score, precision_score, recall_score, accuracy_sc
 from sklearn.metrics.pairwise import cosine_similarity
 from surprise import NMF, SVD, Dataset, Reader
 from surprise.model_selection import train_test_split
+import datetime
 
 """ move these lines to the beginning of each view, and close client after use """
 client = MongoClient('mongodb://localhost:27017/')
@@ -937,14 +938,15 @@ def add_review(request):
     
     if reviews_db.find_one({'attraction_id': attraction_id, 'user_id': user_id}):
         return JsonResponse({'error': 'Review already exists for this user and attraction'}, status=400)
-    
+
     reviews_db.insert_one({
         'attraction_id': attraction_id,
         'user_id': user_id,
         'user_name': user.get('fname', 'Anonymous'),
         'review': review_text,
+        'created_at': datetime.datetime.now(),
     })
-    
+
     return JsonResponse({'message': 'Review added successfully'}, status=201)
 
 
@@ -973,13 +975,15 @@ def delete_review(request):
     if request.method != 'DELETE':
         return JsonResponse({'error': 'Invalid request method'}, status=405)
     
-    data = json.loads(request.body)
-    review_id = data['review_id']
+    review_id = request.GET.get('review_id')
     
-    if not reviews_db.find_one({'_id': ObjectId(review_id)}):
+    if not review_id:
+        return JsonResponse({'error': 'review_id is required'}, status=400)
+        
+    result = reviews_db.delete_one({'_id': ObjectId(review_id)})
+    
+    if result.deleted_count == 0:
         return JsonResponse({'error': 'Review not found'}, status=404)
-    
-    reviews_db.delete_one({'_id': ObjectId(review_id)})
     
     return JsonResponse({'message': 'Review deleted successfully'}, status=200)
 
@@ -989,8 +993,7 @@ def get_reviews(request):
     if request.method != 'GET':
         return JsonResponse({'error': 'Invalid request method'}, status=405)
     
-    data = json.loads(request.body)
-    attraction_id = data.get('attraction_id')
+    attraction_id = request.GET.get('attraction_id')
     
     if not attraction_id:
         return JsonResponse({'error': 'Attraction ID is required as a query parameter.'}, status=400)
@@ -1010,6 +1013,6 @@ def get_reviews(request):
                 review['user_name'] = 'Anonymous'
         
         reviews_list.append(review)
-    
+
     return JsonResponse({'reviews': reviews_list}, status=200)
 
