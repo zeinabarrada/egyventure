@@ -8,8 +8,6 @@ section {
   /* Ensure padding is included in the height calculation */
 }
 body {
-  min-width: 100vw; /* Set your desired minimum width */
   margin: 0;
   padding: 0;
-  overflow-x: hidden; /* Hide horizontal scrollbar */
 }

@@ -1,11 +1,18 @@
 import React from "react";
 import { useParams } from "react-router-dom";
-import { FaStar, FaRegStar, FaMapMarkerAlt } from "react-icons/fa";
+import {
+  FaStar,
+  FaRegStar,
+  FaMapMarkerAlt,
+  FaEdit,
+  FaTrash,
+} from "react-icons/fa";
 import { useAuth } from "../Registration/AuthContext";
 import axios from "axios";
 import "./AttractionDetail.css";
 import AttractionsSlider from "./AttractionSlider";
 import { useState, useEffect, useCallback } from "react";
+import defaultAvatar from "../Navigation/defaultAvatar.jpg";
 
 const AttractionDetail = () => {
   const { id } = useParams();
@@ -20,6 +27,11 @@ const AttractionDetail = () => {
   const [showRecommendations, setShowRecommendations] = useState(false);
   const [openingHours, setOpeningHours] = useState("N/A");
   const apiKey = "fsq3hWZ0zIBseg8iZpDqUL/2HJsvTvgca10r5yp7oYcMbF4=";
+  const [isMapModalOpen, setIsMapModalOpen] = useState(false);
+  const [ratingMessage, setRatingMessage] = useState("");
+  const [reviews, setReviews] = useState([]);
+  const [newReview, setNewReview] = useState("");
+  const [editingReview, setEditingReview] = useState(null);
 
   useEffect(() => {
     const fetchAttraction = async () => {
@@ -120,29 +132,44 @@ const AttractionDetail = () => {
     }
   }, [userId]);
 
-  const handleRatingSubmit = async () => {
-    if (userRating === 0 || hasRated) return;
+  const fetchReviews = useCallback(async () => {
+    try {
+      const response = await axios.get(`http://127.0.0.1:8000/get_reviews/`, {
+        params: { attraction_id: id },
+      });
+      if (response.data.reviews) {
+        setReviews(response.data.reviews);
+      }
+    } catch (error) {
+      console.error("Error fetching reviews:", error);
+    }
+  }, [id]);
+
+  useEffect(() => {
+    fetchReviews();
+  }, [fetchReviews]);
+
+  const handleStarClick = async (rating) => {
+    if (hasRated || isSubmitting) return;
 
     setIsSubmitting(true);
+    setUserRating(rating);
 
     try {
       const response = await axios.post(`http://127.0.0.1:8000/rate/`, {
         user_id: userId,
         attraction_id: id,
-        rating: userRating,
+        rating: rating,
       });
 
-      const isSuccess =
+      if (
         response.status === 200 ||
         response.data?.success ||
-        response.data?.status === "success";
-
-      if (isSuccess) {
+        response.data?.status === "success"
+      ) {
         setHasRated(true);
-        setAttraction((prev) => ({
-          ...prev,
-          user_rating: userRating,
-        }));
+        setAttraction((prev) => ({ ...prev, user_rating: rating }));
+        setRatingMessage("Thank you for your rating!");
         setShowRecommendations(true);
         await fetchRecommendations();
       } else {
@@ -150,13 +177,57 @@ const AttractionDetail = () => {
       }
     } catch (error) {
       console.error("Error submitting rating:", error);
-      alert("Failed to submit rating. Please try again.");
-      setAttraction((prev) => ({
-        ...prev,
-        user_rating: 0,
-      }));
+      setRatingMessage("Failed to submit rating. Please try again.");
+      setUserRating(0); // Reset on error
     } finally {
       setIsSubmitting(false);
+      setTimeout(() => setRatingMessage(""), 4000);
+    }
+  };
+
+  const handleAddReview = async (e) => {
+    e.preventDefault();
+    if (!newReview.trim()) return;
+
+    try {
+      await axios.post(`http://127.0.0.1:8000/add_review/`, {
+        user_id: userId,
+        attraction_id: id,
+        review: newReview,
+      });
+      setNewReview("");
+      fetchReviews();
+    } catch (error) {
+      console.error("Error adding review:", error);
+    }
+  };
+
+  const handleUpdateReview = async (e) => {
+    e.preventDefault();
+    if (!editingReview || !editingReview.review.trim()) return;
+
+    try {
+      await axios.put(`http://127.0.0.1:8000/edit_review/`, {
+        review_id: editingReview._id,
+        review: editingReview.review,
+      });
+      setEditingReview(null);
+      fetchReviews();
+    } catch (error) {
+      console.error("Error updating review:", error);
+    }
+  };
+
+  const handleDeleteReview = async (reviewId) => {
+    if (window.confirm("Are you sure you want to delete this review?")) {
+      try {
+        await axios.delete(`http://127.0.0.1:8000/delete_review/`, {
+          params: { review_id: reviewId },
+        });
+        fetchReviews();
+      } catch (error) {
+        console.error("Error deleting review:", error);
+      }
     }
   };
 
@@ -167,16 +238,17 @@ const AttractionDetail = () => {
           <h3>Your Rating:</h3>
           <div className="rated-stars">
             {[1, 2, 3, 4, 5].map((star) => (
-              <span key={`rated-${star}`}>
-                {star <= userRating ? (
-                  <FaStar className="star rated" />
-                ) : (
-                  <FaRegStar className="star rated-empty" />
-                )}
-              </span>
+              <FaStar
+                key={`rated-${star}`}
+                className={`star ${
+                  star <= userRating ? "rated" : "rated-empty"
+                }`}
+              />
             ))}
           </div>
-          <p className="rating-message">Thank you for your rating!</p>
+          {ratingMessage && (
+            <p className="rating-message success">{ratingMessage}</p>
+          )}
         </div>
       );
     }
@@ -185,27 +257,23 @@ const AttractionDetail = () => {
         <h3>Rate this attraction:</h3>
         <div className="stars-input">
           {[1, 2, 3, 4, 5].map((star) => (
-            <span
+            <FaStar
               key={`input-${star}`}
+              className={`star interactive ${
+                star <= (hoverRating || userRating) ? "full" : "empty"
+              }`}
               onMouseEnter={() => setHoverRating(star)}
               onMouseLeave={() => setHoverRating(0)}
-              onClick={() => setUserRating(star)}
-            >
-              {star <= (hoverRating || userRating) ? (
-                <FaStar className="star interactive full" />
-              ) : (
-                <FaRegStar className="star interactive empty" />
-              )}
-            </span>
+              onClick={() => handleStarClick(star)}
+            />
           ))}
         </div>
-        <button
-          onClick={handleRatingSubmit}
-          disabled={userRating === 0 || isSubmitting}
-          className="submit-rating-button"
-        >
-          {isSubmitting ? "Submitting..." : "Submit Rating"}
-        </button>
+        {isSubmitting && (
+          <p className="rating-message">Submitting your rating...</p>
+        )}
+        {ratingMessage && (
+          <p className="rating-message error">{ratingMessage}</p>
+        )}
       </div>
     );
   };
@@ -227,107 +295,164 @@ const AttractionDetail = () => {
   const mapUrl = `https://www.google.com/maps?q=${mapQuery}&output=embed`;
 
   return (
-    <section className="attraction-detail-new">
-      {/* Header Image with overlay */}
-      <div className="header-image-container large">
+    <div className="swiper-container">
+      <div className="backdrop-image">
         <img
           src={attraction.image}
           alt={attraction.name}
-          className="header-image large"
+          className="backdrop-img"
         />
-        <div className="header-overlay large">
-          <div className="header-content large">
-            <div className="header-rating large">
-              <span className="star-badge large">
-                <FaStar />{" "}
-                {attraction.rating ? attraction.rating.toFixed(1) : "-"}
-              </span>
-            </div>
-            <h1 className="header-title large">{attraction.name}</h1>
-            <div className="header-location large">
-              <FaMapMarkerAlt /> {attraction.city || "Unknown"}
-            </div>
-            <div className="header-rating-input">{renderRatingInput()}</div>
-          </div>
+        <div className="gradient-overlay"></div>
+      </div>
+      <div className="backdrop-content">
+        <h1>{attraction.name}</h1>
+        <div className="movie-meta">
+          <span>
+            <FaMapMarkerAlt /> {attraction.city}
+          </span>
+          <span>
+            <FaStar />{" "}
+            {attraction.rating ? attraction.rating.toFixed(1) : "N/A"}
+          </span>
+          <span>{attraction.category}</span>
         </div>
+        <p className="overview">{attraction.description}</p>
+        <button
+          className="view-map-btn"
+          onClick={() => setIsMapModalOpen(true)}
+        >
+          View on Map
+        </button>
+        {renderRatingInput()}
       </div>
 
-      <div className="main-content-layout">
-        {/* Left: About, Photos */}
-        <div className="main-content-left">
-          <section className="about-section card">
-            <h2>About</h2>
-            <p className="full-description">{attraction.description}</p>
-          </section>
-
-          {/* Photos Gallery */}
-          <section className="photos-section">
-            <h2>Photos</h2>
-            <div className="photos-gallery">
-              {photos.map((photo, idx) => (
-                <image
-                  key={idx}
-                  src={photo}
-                  alt={`Photo ${idx + 1}`}
-                  className="gallery-photo"
-                />
-              ))}
-            </div>
-          </section>
-        </div>
-
-        {/* Right: Practical Info & Map */}
-        <div className="main-content-right wide">
-          <div className="practical-info-card large">
-            <h3>Practical Information</h3>
-            <div className="practical-info-item large">
-              <span>Opening Hours:</span>
-              <span>{openingHours}</span>
-            </div>
-            {attraction.website && (
-              <div className="practical-info-item large">
-                <span>Website:</span>
-                <a
-                  href={attraction.website}
-                  target="_blank"
-                  rel="noopener noreferrer"
-                >
-                  Visit Official Website
-                </a>
-              </div>
-            )}
+      {isMapModalOpen && (
+        <div
+          className="map-modal-overlay"
+          onClick={() => setIsMapModalOpen(false)}
+        >
+          <div
+            className="map-modal-content"
+            onClick={(e) => e.stopPropagation()}
+          >
+            <button
+              className="close-modal-btn"
+              onClick={() => setIsMapModalOpen(false)}
+            >
+              &times;
+            </button>
+            <iframe
+              title="Map"
+              src={mapUrl}
+              width="100%"
+              height="100%"
+              style={{ border: 0, borderRadius: "8px" }}
+              allowFullScreen=""
+              loading="lazy"
+              referrerPolicy="no-referrer-when-downgrade"
+            ></iframe>
           </div>
-          <div className="map-card large">
-            <h3>Location</h3>
-            <div className="map-embed large">
-              <iframe
-                title="Map"
-                src={mapUrl}
-                width="100%"
-                height="250"
-                style={{ border: 0 }}
-                allowFullScreen=""
-                loading="lazy"
-                referrerPolicy="no-referrer-when-downgrade"
-              ></iframe>
-            </div>
-            <div className="address large">
-              <span>
-                {attraction.city ? `${attraction.city}, Egypt` : "Egypt"}
-              </span>
-            </div>
-          </div>
-        </div>
-      </div>
-
-      {/* Recommendations */}
-      {(hasRated || showRecommendations) && recommendations.length > 0 && (
-        <div className="recommendations-section">
-          <h2>You Might Also Like</h2>
-          <AttractionsSlider title="" items={recommendations} userId={userId} />
         </div>
       )}
-    </section>
+
+      {showRecommendations && recommendations.length > 0 && (
+        <div style={{ marginTop: "3rem" }}>
+          <AttractionsSlider
+            title="You might also like"
+            items={recommendations}
+            userId={userId}
+          />
+        </div>
+      )}
+
+      <div className="page-reviews-section">
+        <h2>Reviews for {attraction.name}</h2>
+        <div className="add-review-form">
+          <form onSubmit={handleAddReview}>
+            <textarea
+              value={newReview}
+              onChange={(e) => setNewReview(e.target.value)}
+              placeholder="Write your review here..."
+              rows="4"
+            />
+            <button type="submit">Submit Review</button>
+          </form>
+        </div>
+        <div className="reviews-list">
+          {reviews.length > 0 ? (
+            reviews.map((review) => (
+              <div key={review._id} className="review-item">
+                <img src={defaultAvatar} alt="User" className="review-avatar" />
+                <div className="review-content">
+                  {editingReview?._id === review._id ? (
+                    <form
+                      onSubmit={handleUpdateReview}
+                      className="edit-review-form"
+                    >
+                      <textarea
+                        value={editingReview.review}
+                        onChange={(e) =>
+                          setEditingReview({
+                            ...editingReview,
+                            review: e.target.value,
+                          })
+                        }
+                        rows="3"
+                      />
+                      <div className="edit-actions">
+                        <button type="submit">Save Changes</button>
+                        <button
+                          type="button"
+                          onClick={() => setEditingReview(null)}
+                        >
+                          Cancel
+                        </button>
+                      </div>
+                    </form>
+                  ) : (
+                    <>
+                      <div className="review-header">
+                        <span className="review-author">
+                          {review.user_name || "Anonymous"}
+                        </span>
+                        {review.created_at && (
+                          <span className="review-date">
+                            {new Date(review.created_at).toLocaleDateString()}
+                          </span>
+                        )}
+                      </div>
+                      <p className="review-text">{review.review}</p>
+                      {review.user_id === userId && (
+                        <div className="review-actions">
+                          <button
+                            onClick={() => setEditingReview(review)}
+                            className="icon-btn"
+                            aria-label="Edit review"
+                          >
+                            <FaEdit />
+                          </button>
+                          <button
+                            onClick={() => handleDeleteReview(review._id)}
+                            className="icon-btn danger"
+                            aria-label="Delete review"
+                          >
+                            <FaTrash />
+                          </button>
+                        </div>
+                      )}
+                    </>
+                  )}
+                </div>
+              </div>
+            ))
+          ) : (
+            <p className="no-reviews-text">
+              No reviews yet. Be the first to write one!
+            </p>
+          )}
+        </div>
+      </div>
+    </div>
   );
 };
 
