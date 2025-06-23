@@ -6,6 +6,7 @@ urlpatterns = [
     path('signup/', views.signup, name='signup'),
     path('login/', views.login, name='login'),
 
+    path('get_similar_attractions/', views.get_similar_attractions, name='get_similar_attractions'),
     path('get_attractions/', views.get_attractions, name='get_attractions'),    
     path('get_attraction_details/', views.get_attraction_details, name='get_attraction_details'),
     path('must_see/', views.get_must_see, name='must_see'),
@@ -23,11 +24,12 @@ urlpatterns = [
     path('edit_review/', views.edit_review, name='edit_review'),
     path('delete_review/', views.delete_review, name='delete_review'),
     path('get_reviews/', views.get_reviews, name='get_reviews'),
-    
+
+    path('bert_reviews/', views.bert, name='bert_review'),
     path('word2vec/', views.word2vec_recommendations, name='word2vec'),
     path('pearson_similarity/', views.pearson_similarity2, name='pearson_similarity'),
     path('NMF_SVD/', views.NMF_SVD, name='NMF_SVD'),
 
     path('update_interests/', views.update_interests, name='update_interests'),
-    path('get_user_interests/', views.get_user_interests, name='get_user_interests'),
+    path('account/', views.get_account_details, name='get_account_details'),
 ]

@@ -13,6 +13,7 @@ from sklearn.metrics.pairwise import cosine_similarity
 from surprise import NMF, SVD, Dataset, Reader
 from surprise.model_selection import train_test_split
 import datetime
+from recommendation_models import bert_reviews, cosine_similarity # this isn't an error, keep it as it is
 
 """ move these lines to the beginning of each view, and close client after use """
 client = MongoClient('mongodb://localhost:27017/')
@@ -1021,9 +1022,7 @@ def get_reviews(request):
 
 @csrf_exempt
 def update_interests(request):
-    """
-    Update user interests - allows users to change their interests after account creation
-    """
+    """ Update user interests - allows users to change their interests after account creation """
     if request.method != 'POST':
         return JsonResponse({'error': 'Only POST method is allowed'}, status=405)
 
@@ -1066,14 +1065,12 @@ def update_interests(request):
 
         if result.modified_count > 0:
             return JsonResponse({
-                'success': True,
                 'message': 'Interests updated successfully',
                 'user_id': user_id,
                 'new_interests': new_interests
             }, status=200)
         else:
             return JsonResponse({
-                'success': False,
                 'message': 'No changes made to interests'
             }, status=200)
 
@@ -1084,47 +1081,86 @@ def update_interests(request):
 
 
 @csrf_exempt
-def get_user_interests(request):
-    """ Get current user interests """
+def get_account_details(request):
     if request.method != 'GET':
         return JsonResponse({'error': 'Only GET method is allowed'}, status=405)
 
     try:
-        # Parse request data
         if request.content_type == 'application/json':
-            try:
-                data = json.loads(request.body.decode('utf-8'))
-            except json.JSONDecodeError:
-                return JsonResponse({'error': 'Invalid JSON data'}, status=400)
+            data = json.loads(request.body.decode('utf-8'))
         else:
             data = request.GET
+    except Exception as e:
+        return JsonResponse({'error': f'Invalid JSON data, {e}'}, status=400)
 
+    try:
         user_id = data.get('user_id')
-
         if not user_id:
             return JsonResponse({'error': 'User ID is required'}, status=400)
 
-        # Validate user_id format
-        try:
-            user_oid = ObjectId(user_id)
-        except Exception:
-            return JsonResponse({'error': 'Invalid user ID format'}, status=400)
-
-        # Get user interests
-        user = users_db.find_one({'_id': user_oid}, {'interests': 1, 'fname': 1})
+        user = users_db.find_one({'_id': ObjectId(user_id)})
 
         if not user:
             return JsonResponse({'error': 'User not found'}, status=404)
 
+
         return JsonResponse({
-            'success': True,
             'user_id': user_id,
-            'user_name': user.get('fname', ''),
+            'username': user.get('username', ''),
+            'first_name': user.get('fname', ''),
+            'last_name': user.get('lname', ''),
+            'email': user.get('email', ''),
+            'password': user.get('password', ''),
             'interests': user.get('interests', '')
         }, status=200)
 
     except Exception as e:
         return JsonResponse({
-            'error': f'An error occurred while fetching interests: {str(e)}'
+            'error': f'An error occurred while fetching account details: {str(e)}'
         }, status=500)
 
+
+@csrf_exempt
+def get_similar_attractions(request):
+    try:
+        data = json.loads(request.body.decode('utf-8'))
+    except json.JSONDecodeError:
+        return JsonResponse({'error': 'Invalid JSON data'}, status=400)
+
+    attracion_id = data.get('attraction_id')
+
+    if not attracion_id:
+        return JsonResponse({'error': 'Attraction ID is required'}, status=400)
+
+    attractions = cosine_similarity.recommend(list(attractions_db.find()), attracion_id)
+
+    if attractions:
+        result_list = []
+        for attr in attractions:
+            attr['_id'] = str(attr['_id'])
+            result_list.append(attr)
+        return JsonResponse({'attractions': result_list}, status=200)
+
+    return JsonResponse({'error': 'No attractions found'}, status=400)
+
+
+@csrf_exempt
+def bert(request):
+    try:
+        data = json.loads(request.body.decode('utf-8'))
+    except json.JSONDecodeError:
+        return JsonResponse({'error': 'Invalid JSON data'}, status=400)
+
+    target_user_id = data.get('user_id')
+    if not target_user_id:
+        return JsonResponse({'error': 'User ID is required'}, status=400)
+
+    try:
+        recommendations = bert_reviews.main(attractions_db, reviews_db, target_user_id)
+    except Exception as e:
+        return JsonResponse({'error': f'BERT failed: {str(e)}'}, status=500)
+
+    if recommendations:
+        return JsonResponse({'recommendations': recommendations}, status=200)
+    else:
+        return JsonResponse({'error': 'No recommendations'}, status=404)
