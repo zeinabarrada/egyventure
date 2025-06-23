@@ -13,7 +13,7 @@ from sklearn.metrics.pairwise import cosine_similarity
 from surprise import NMF, SVD, Dataset, Reader
 from surprise.model_selection import train_test_split
 import datetime
-from recommendation_models import bert_reviews, cosine_similarity
+from recommendation_models import bert_reviews, cosine_similarity # this isn't an error, keep it as it is
 
 """ move these lines to the beginning of each view, and close client after use """
 client = MongoClient('mongodb://localhost:27017/')
@@ -1144,13 +1144,23 @@ def get_similar_attractions(request):
     return JsonResponse({'error': 'No attractions found'}, status=400)
 
 
-
+@csrf_exempt
 def bert(request):
-    data = json.loads(request.body.decode('utf-8'))
-    target_user_id = data.get('user_id')
+    try:
+        data = json.loads(request.body.decode('utf-8'))
+    except json.JSONDecodeError:
+        return JsonResponse({'error': 'Invalid JSON data'}, status=400)
 
-    recommendations = bert_reviews.main(attractions_db, reviews_db, target_user_id)
+    target_user_id = data.get('user_id')
+    if not target_user_id:
+        return JsonResponse({'error': 'User ID is required'}, status=400)
+
+    try:
+        recommendations = bert_reviews.main(attractions_db, reviews_db, target_user_id)
+    except Exception as e:
+        return JsonResponse({'error': f'BERT failed: {str(e)}'}, status=500)
+
     if recommendations:
-        return recommendations
+        return JsonResponse({'recommendations': recommendations}, status=200)
     else:
         return JsonResponse({'error': 'No recommendations'}, status=404)

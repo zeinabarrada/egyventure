@@ -24,7 +24,8 @@ urlpatterns = [
     path('edit_review/', views.edit_review, name='edit_review'),
     path('delete_review/', views.delete_review, name='delete_review'),
     path('get_reviews/', views.get_reviews, name='get_reviews'),
-    
+
+    path('bert_reviews/', views.bert, name='bert_review'),
     path('word2vec/', views.word2vec_recommendations, name='word2vec'),
     path('pearson_similarity/', views.pearson_similarity2, name='pearson_similarity'),
     path('NMF_SVD/', views.NMF_SVD, name='NMF_SVD'),

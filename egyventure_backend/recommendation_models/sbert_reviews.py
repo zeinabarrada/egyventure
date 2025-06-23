@@ -7,9 +7,12 @@ from bson.objectid import ObjectId
 
 def encode_reviews(df, model):
     """Encodes reviews using the SentenceTransformer model."""
-    if 'review' in df.columns and not df.empty:
-
-        df['review_embedding'] = list(model.encode(df['review'].tolist()))
+    try:
+        if 'review' in df.columns and not df.empty:
+            df['review_embedding'] = list(model.encode(df['review'].tolist()))
+    except AssertionError as e:
+        print("AssertionError during encoding reviews:", str(e))
+        df['review_embedding'] = None
 
     return df
 
