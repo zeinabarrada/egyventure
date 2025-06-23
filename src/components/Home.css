@@ -1,0 +1,125 @@
+.home-page {
+  background-color: #f8f9fa;
+  min-height: 100vh;
+}
+
+.home-header {
+  background: linear-gradient(rgba(0, 0, 0, 0.5), rgba(0, 0, 0, 0.5)),
+    url("../../public/Home.jpg");
+  background-size: cover;
+  background-position: center;
+  color: white;
+  padding: 6rem 2rem;
+  text-align: center;
+}
+
+.home-header h1 {
+  font-size: 3.5rem;
+  font-weight: 700;
+  margin-bottom: 1rem;
+}
+
+.home-header p {
+  font-size: 1.25rem;
+  max-width: 600px;
+  margin: 0 auto;
+}
+
+.sliders-section {
+  padding: 0;
+}
+
+/* Explore Cities Section */
+.explore-cities-section {
+  background-color: #ffffff;
+  padding: 4rem 0;
+  text-align: center;
+}
+
+.explore-cities-section .section-header h2 {
+  font-size: 2.5rem;
+  font-weight: 700;
+  color: #212529;
+  margin-bottom: 2rem;
+}
+
+.city-selector {
+  display: flex;
+  justify-content: center;
+  gap: 1rem;
+  margin-bottom: 3rem;
+  flex-wrap: wrap;
+}
+
+.city-btn {
+  background-color: #e9ecef;
+  color: #495057;
+  border: none;
+  padding: 0.75rem 1.5rem;
+  border-radius: 50px;
+  font-size: 1rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.3s ease;
+}
+
+.city-btn:hover {
+  background-color: #dee2e6;
+  transform: translateY(-2px);
+}
+
+.city-btn.active {
+  background-color: #007bff;
+  color: white;
+  box-shadow: 0 4px 15px rgba(0, 123, 255, 0.3);
+  transform: translateY(-2px);
+}
+
+.city-attractions-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(360px, 1fr));
+  gap: 2rem;
+  padding: 0 1rem;
+  max-width: 90vw;
+  margin: 0 auto;
+}
+
+.city-tabs-section {
+  background-color: #fff;
+  padding: 2rem 0;
+  margin: 2rem 0;
+}
+
+.city-tabs {
+  display: flex;
+  justify-content: center;
+  gap: 1.5rem;
+  border-bottom: 2px solid #e0e0e0;
+  margin-bottom: 2rem;
+}
+
+.city-tab {
+  background: none;
+  border: none;
+  padding: 1rem;
+  font-size: 1.2rem;
+  font-weight: 600;
+  color: #555;
+  cursor: pointer;
+  position: relative;
+  transition: color 0.3s ease;
+}
+
+.city-tab.active {
+  color: #2c3e50;
+}
+
+.city-tab.active::after {
+  content: "";
+  position: absolute;
+  bottom: -2px;
+  left: 0;
+  width: 100%;
+  height: 2px;
+  background-color: #2c3e50;
+}

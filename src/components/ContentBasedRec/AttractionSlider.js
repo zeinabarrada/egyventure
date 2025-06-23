@@ -1,15 +1,9 @@
 import React, { useEffect, useState, useRef } from "react";
 import axios from "axios";
-import {
-  FaHeart,
-  FaRegHeart,
-  FaMapMarkerAlt,
-  FaCalendarAlt,
-  FaChevronLeft,
-  FaChevronRight,
-} from "react-icons/fa";
+import { FaChevronLeft, FaChevronRight } from "react-icons/fa";
 import "./Card.css";
 import { useNavigate } from "react-router-dom";
+import AttractionCard from "./AttractionCard";
 
 const AttractionsSlider = ({
   title,
@@ -26,7 +20,6 @@ const AttractionsSlider = ({
   const sliderRef = useRef(null);
   const [showLeftArrow, setShowLeftArrow] = useState(false);
   const [showRightArrow, setShowRightArrow] = useState(true);
-  const [expandedCards, setExpandedCards] = useState({});
   const getItemId = (item) => item.attraction_id || item._id || item.id;
   useEffect(() => {
     if (propItems && propItems.length > 0) {
@@ -163,16 +156,6 @@ const AttractionsSlider = ({
     }
   };
 
-  const toggleDescription = (itemId) => {
-    setExpandedCards((prev) => ({ ...prev, [itemId]: !prev[itemId] }));
-  };
-
-  const truncateDescription = (text, itemId, maxLength = 100) => {
-    if (!text) return "";
-    return expandedCards[itemId] || text.length <= maxLength
-      ? text
-      : text.substring(0, maxLength) + "...";
-  };
   if (items.length <= 5) return null;
 
   return (
@@ -209,104 +192,19 @@ const AttractionsSlider = ({
             onScroll={handleScroll}
           >
             {items.length > 0 ? (
-              items.map((item) => (
-                <article
-                  key={item._id || item.attraction_id || items.attraction_id}
-                  className="recommendation-card"
-                  onClick={() => {
-                    navigate(
-                      `/attractions/${
-                        item.attraction_id ||
-                        item._id ||
-                        item.id ||
-                        items.attraction_id
-                      }`
-                    );
-                  }}
-                >
-                  <div className="card-media">
-                    <img src={item.image} alt={item.name} loading="lazy" />
-                    <button
-                      className={`like-btn ${
-                        likedItems.includes(
-                          item.attraction_id ||
-                            item._id ||
-                            item.id ||
-                            items.attraction_id
-                        )
-                          ? "liked"
-                          : ""
-                      }`}
-                      onClick={(e) => {
-                        e.preventDefault();
-                        e.stopPropagation();
-                        console.log("Like button clicked for item:", item); // Debug
+              items.map((item) => {
+                const itemId = getItemId(item);
+                const isLiked = likedItems.includes(itemId);
 
-                        // Use the most specific ID available
-                        const attractionId =
-                          item.attraction_id ||
-                          item._id ||
-                          item.id ||
-                          items.attraction_id;
-                        console.log("Using attractionId:", attractionId); // Debug
-
-                        toggleLike(attractionId).catch(console.error);
-                      }}
-                      style={{ pointerEvents: "auto" }} // Force clickability
-                      aria-label={
-                        likedItems.includes(
-                          item.attraction_id || item._id || item.id
-                        )
-                          ? "Unlike"
-                          : "Like"
-                      }
-                    >
-                      {likedItems.includes(
-                        item.attraction_id ||
-                          item._id ||
-                          item.id ||
-                          items.attraction_id
-                      ) ? (
-                        <FaHeart />
-                      ) : (
-                        <FaRegHeart />
-                      )}
-                    </button>
-                    <div className="card-badges">
-                      <span className="location-badge">
-                        <FaMapMarkerAlt />{" "}
-                        {item.location || item.city || "Unknown"}
-                      </span>
-                      {item.century && (
-                        <span className="era-badge">
-                          <FaCalendarAlt /> {item.century}
-                        </span>
-                      )}
-                    </div>
-                  </div>
-                  <div className="card-content">
-                    <h3>{item.name}</h3>
-                    <div className="description-container">
-                      <p className="description">
-                        {truncateDescription(item.description, getItemId(item))}
-                      </p>
-                      {item.description && item.description.length > 100 && (
-                        <button
-                          className="read-more-btn"
-                          onClick={(e) => {
-                            e.stopPropagation();
-                            toggleDescription(getItemId(item));
-                          }}
-                        >
-                          {expandedCards[getItemId(item)]
-                            ? "Read Less"
-                            : "Read More"}
-                        </button>
-                      )}
-                    </div>
-                  </div>
-                </article>
-              ))
+                return (
+                  <AttractionCard
+                    key={itemId}
+                    item={item}
+                    isLiked={isLiked}
+                    onLikeToggle={toggleLike}
+                  />
+                );
+              })
             ) : (
               <div className="no-results">
                 <p>Loading {title.toLowerCase()}...</p>
