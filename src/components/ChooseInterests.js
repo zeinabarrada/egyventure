@@ -8,10 +8,12 @@ import interestsList from "./Registration/interestsList";
 export default function ChooseInterests() {
   const { user } = useAuth(); // Get user from AuthContext
   const userId = user?.id;
-  console.log(userId);
   const navigate = useNavigate();
 
   const [selectedInterests, setSelectedInterests] = useState([]);
+  const [activeCategory, setActiveCategory] = useState(
+    interestsList[0].category
+  );
 
   const toggleInterest = (interest) => {
     setSelectedInterests(
@@ -24,7 +26,6 @@ export default function ChooseInterests() {
   const handleSubmit = async () => {
     try {
       const interestsString = selectedInterests.join(",");
-      console.log(interestsString);
       const response = await axios.post(
         "http://127.0.0.1:8000/post_interests/",
         {
@@ -43,6 +44,11 @@ export default function ChooseInterests() {
       alert("An error occurred. Please try again.");
     }
   };
+  // Find the active category object
+  const activeCategoryObj = interestsList.find(
+    (cat) => cat.category === activeCategory
+  );
+
   return (
     <div>
       <div className="heading-container">
@@ -50,8 +56,49 @@ export default function ChooseInterests() {
         <p>Select all that apply</p>
       </div>
 
-      <div className="interests-container">
-        {interestsList.map((interest) => (
+      <div
+        className="category-tabs"
+        style={{
+          display: "flex",
+          gap: "1rem",
+          margin: "0 auto 2.5rem auto",
+          justifyContent: "center",
+          flexWrap: "wrap",
+        }}
+      >
+        {interestsList.map((cat) => (
+          <button
+            key={cat.category}
+            className={`category-tab-btn${
+              activeCategory === cat.category ? " active" : ""
+            }`}
+            style={{
+              background:
+                activeCategory === cat.category ? "#1a365d" : "#e9ecef",
+              color: activeCategory === cat.category ? "#fff" : "#1a365d",
+              border: "none",
+              borderRadius: "999px",
+              padding: "0.6rem 1.5rem",
+              fontWeight: 600,
+              fontSize: "1rem",
+              cursor: "pointer",
+              transition: "background 0.2s, color 0.2s",
+            }}
+            onClick={() => setActiveCategory(cat.category)}
+          >
+            {cat.category}
+          </button>
+        ))}
+      </div>
+      <div
+        className="interests-category-row"
+        style={{
+          justifyContent: "center",
+          marginBottom: "2.5rem",
+          flexWrap: "wrap",
+        }}
+      >
+        {activeCategoryObj.interests.map((interest) => (
           <button
             key={interest}
             className={selectedInterests.includes(interest) ? "selected" : ""}
@@ -60,11 +107,11 @@ export default function ChooseInterests() {
             {interest}
           </button>
         ))}
-        <div className="submit-container">
-          <button className="submit-btn" onClick={handleSubmit}>
-            Submit
-          </button>
-        </div>
+      </div>
+      <div className="submit-container">
+        <button className="submit-btn" onClick={handleSubmit}>
+          Submit
+        </button>
       </div>
     </div>
   );

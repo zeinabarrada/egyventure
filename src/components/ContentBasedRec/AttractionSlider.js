@@ -76,12 +76,6 @@ const AttractionsSlider = ({
     // Use the most specific ID available
     const attractionId = item?.attraction_id || item?._id || itemId;
 
-    console.log("Toggling like for:", {
-      receivedId: itemId,
-      resolvedId: attractionId,
-      itemFound: !!item,
-    });
-
     const isLiking = !likedItems.includes(attractionId);
     const prevLikedItems = [...likedItems];
 
@@ -121,8 +115,6 @@ const AttractionsSlider = ({
         if (!response.data.success) {
           throw new Error(response.data.message);
         }
-
-        console.log("Like operation successful:", response.data);
       } catch (error) {
         console.error("Like operation failed:", error);
         setLikedItems(prevLikedItems); // Revert on error
@@ -159,71 +151,55 @@ const AttractionsSlider = ({
   if (items.length <= 5) return null;
 
   return (
-    <section className="recommendations-section">
-      <div className="container">
-        <header className="section-header">
-          <h2>
-            <span className="highlight">{title}</span>
-          </h2>
-          {showViewAll && cityName && (
-            <button
-              onClick={() => navigate(`/attractions?city=${cityName}`)}
-              className="view-all-btn"
-            >
-              View All
-            </button>
-          )}
-        </header>
-
-        <div className="slider-container">
-          {showLeftArrow && (
-            <button
-              className="slider-arrow left-arrow"
-              onClick={scrollLeft}
-              aria-label="Scroll left"
-            >
-              <FaChevronLeft />
-            </button>
-          )}
-
-          <div
-            className="recommendations-grid"
-            ref={sliderRef}
-            onScroll={handleScroll}
+    <>
+      <div className="slider-container">
+        {showLeftArrow && (
+          <button
+            className="slider-arrow left-arrow"
+            onClick={scrollLeft}
+            aria-label="Scroll left"
           >
-            {items.length > 0 ? (
-              items.map((item) => {
-                const itemId = getItemId(item);
-                const isLiked = likedItems.includes(itemId);
+            <FaChevronLeft />
+          </button>
+        )}
 
-                return (
-                  <AttractionCard
-                    key={itemId}
-                    item={item}
-                    isLiked={isLiked}
-                    onLikeToggle={toggleLike}
-                  />
-                );
-              })
-            ) : (
-              <div className="no-results">
-                <p>Loading {title.toLowerCase()}...</p>
-              </div>
-            )}
-          </div>
+        <div
+          className="recommendations-grid"
+          ref={sliderRef}
+          onScroll={handleScroll}
+        >
+          {items.length > 0 ? (
+            items.map((item) => {
+              const itemId = getItemId(item);
+              const isLiked = likedItems.includes(itemId);
 
-          {showRightArrow && (
-            <button
-              className="slider-arrow right-arrow"
-              onClick={scrollRight}
-              aria-label="Scroll right"
-            >
-              <FaChevronRight />
-            </button>
+              return (
+                <AttractionCard
+                  key={itemId}
+                  item={item}
+                  isLiked={isLiked}
+                  onLikeToggle={toggleLike}
+                />
+              );
+            })
+          ) : (
+            <div className="no-results">
+              <p>Loading {title.toLowerCase()}...</p>
+            </div>
           )}
         </div>
+
+        {showRightArrow && (
+          <button
+            className="slider-arrow right-arrow"
+            onClick={scrollRight}
+            aria-label="Scroll right"
+          >
+            <FaChevronRight />
+          </button>
+        )}
       </div>
-    </section>
+    </>
   );
 };
 

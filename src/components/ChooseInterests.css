@@ -17,18 +17,134 @@ h2 {
   width: 100%;
   z-index: 10;
 }
+
+/* Modern Choose Interests Styles */
+.heading-container {
+  text-align: center;
+  margin-top: 3rem;
+  margin-bottom: 2.5rem;
+}
+.heading-container h2 {
+  font-size: 2.3rem;
+  font-weight: 800;
+  color: #1a365d;
+  margin-bottom: 0.5rem;
+}
+.heading-container p {
+  color: #444;
+  font-size: 1.1rem;
+}
+
 .interests-container {
   display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
-  gap: 1rem;
-  max-width: 1000px;
-  margin: 0 auto 2rem;
-  padding: 1rem;
-  height: 500px; /* Fixed height to show exactly 5 rows */
-  overflow-y: auto; /* Enable vertical scrolling */
-  scrollbar-width: thin; /* For Firefox */
-  scrollbar-color: #c4b5a3 #f1e9e0; /* For Firefox */
+  grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));
+  gap: 2.5rem;
+  max-width: 1200px;
+  margin: 0 auto 2.5rem auto;
+  padding: 0 1rem;
 }
+
+.interests-category-block {
+  background: #f7fafc;
+  border-radius: 18px;
+  box-shadow: 0 2px 12px rgba(30, 41, 59, 0.07);
+  padding: 2rem 1.2rem 1.5rem 1.2rem;
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  min-width: 220px;
+}
+
+.interests-category-block h4 {
+  font-size: 1.25rem;
+  font-weight: 700;
+  color: #1a365d;
+  margin-bottom: 1.2rem;
+  letter-spacing: 0.5px;
+}
+
+.interests-category-row {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.7rem;
+}
+
+.interests-category-row button {
+  background: #e9ecef;
+  color: #1a365d;
+  border: none;
+  border-radius: 999px;
+  padding: 0.6rem 1.5rem;
+  font-size: 1rem;
+  font-weight: 500;
+  cursor: pointer;
+  transition: background 0.2s, color 0.2s, box-shadow 0.2s;
+  box-shadow: 0 1px 4px rgba(30, 41, 59, 0.04);
+  outline: none;
+  margin-bottom: 0.3rem;
+}
+
+.interests-category-row button.selected {
+  background: #1a365d;
+  color: #fff;
+  box-shadow: 0 2px 8px rgba(30, 41, 59, 0.13);
+  border: 2px solid #e3b04b;
+}
+
+.interests-category-row button:hover:not(.selected) {
+  background: #dbeafe;
+  color: #1a365d;
+}
+
+.submit-container {
+  width: 100%;
+  display: flex;
+  justify-content: center;
+  margin-top: 2.5rem;
+}
+
+.submit-btn {
+  background: linear-gradient(90deg, #1a365d 60%, #e3b04b 100%);
+  color: #fff;
+  border: none;
+  border-radius: 30px;
+  padding: 1rem 4rem;
+  font-size: 1.3rem;
+  font-weight: 800;
+  cursor: pointer;
+  box-shadow: 0 4px 16px rgba(30, 41, 59, 0.13);
+  transition: background 0.2s, box-shadow 0.2s;
+}
+.submit-btn:hover {
+  background: linear-gradient(90deg, #1a365d 80%, #e3b04b 100%);
+  box-shadow: 0 8px 24px rgba(30, 41, 59, 0.18);
+}
+
+@media (max-width: 900px) {
+  .interests-container {
+    grid-template-columns: 1fr 1fr;
+    gap: 1.5rem;
+  }
+  .interests-category-block {
+    padding: 1.2rem 0.7rem 1rem 0.7rem;
+  }
+}
+@media (max-width: 600px) {
+  .interests-container {
+    grid-template-columns: 1fr;
+    gap: 1rem;
+    padding: 0;
+  }
+  .interests-category-block {
+    min-width: 0;
+    padding: 1rem 0.3rem 0.7rem 0.3rem;
+  }
+  .submit-btn {
+    width: 100%;
+    padding: 1rem 0;
+  }
+}
+
 /* Custom scrollbar for Webkit browsers */
 .interests-container::-webkit-scrollbar {
   width: 8px;
@@ -120,10 +236,6 @@ button.selected {
 p {
   text-align: center;
   padding: 10px;
-}
-.heading-container {
-  text-align: center;
-  margin-bottom: 20px; /* Space before buttons */
 }
 
 @media (max-width: 600px) {

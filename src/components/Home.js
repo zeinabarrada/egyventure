@@ -127,8 +127,16 @@ export default function Home() {
       </header>
 
       <div className="sliders-section">
-        <RecCards />
-        <MustSeeAttractions />
+        <div className="container">
+          <header className="section-header">
+            <h2>Recommended just for you</h2>
+          </header>
+          <RecCards />
+          <header className="section-header">
+            <h2>Must See Attractions</h2>
+          </header>
+          <MustSeeAttractions />
+        </div>
       </div>
 
       {cities.length > 0 && (

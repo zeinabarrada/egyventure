@@ -295,76 +295,67 @@ const AttractionDetail = () => {
   const mapUrl = `https://www.google.com/maps?q=${mapQuery}&output=embed`;
 
   return (
-    <div className="swiper-container">
-      <div className="backdrop-image">
-        <img
-          src={attraction.image}
-          alt={attraction.name}
-          className="backdrop-img"
-        />
-        <div className="gradient-overlay"></div>
-      </div>
-      <div className="backdrop-content">
-        <h1>{attraction.name}</h1>
-        <div className="movie-meta">
-          <span>
-            <FaMapMarkerAlt /> {attraction.city}
-          </span>
-          <span>
-            <FaStar />{" "}
-            {attraction.rating ? attraction.rating.toFixed(1) : "N/A"}
-          </span>
-          <span>{attraction.category}</span>
-        </div>
-        <p className="overview">{attraction.description}</p>
-        <button
-          className="view-map-btn"
-          onClick={() => setIsMapModalOpen(true)}
-        >
-          View on Map
-        </button>
-        {renderRatingInput()}
-      </div>
-
-      {isMapModalOpen && (
-        <div
-          className="map-modal-overlay"
-          onClick={() => setIsMapModalOpen(false)}
-        >
-          <div
-            className="map-modal-content"
-            onClick={(e) => e.stopPropagation()}
-          >
-            <button
-              className="close-modal-btn"
-              onClick={() => setIsMapModalOpen(false)}
-            >
-              &times;
-            </button>
-            <iframe
-              title="Map"
-              src={mapUrl}
-              width="100%"
-              height="100%"
-              style={{ border: 0, borderRadius: "8px" }}
-              allowFullScreen=""
-              loading="lazy"
-              referrerPolicy="no-referrer-when-downgrade"
-            ></iframe>
-          </div>
-        </div>
-      )}
-
-      {showRecommendations && recommendations.length > 0 && (
-        <div style={{ marginTop: "3rem" }}>
-          <AttractionsSlider
-            title="You might also like"
-            items={recommendations}
-            userId={userId}
+    <>
+      <div className="swiper-container">
+        <div className="backdrop-image">
+          <img
+            src={attraction.image}
+            alt={attraction.name}
+            className="backdrop-img"
           />
+          <div className="gradient-overlay"></div>
         </div>
-      )}
+        <div className="backdrop-content">
+          <h1>{attraction.name}</h1>
+          <div className="movie-meta">
+            <span>
+              <FaMapMarkerAlt /> {attraction.city}
+            </span>
+            <span>
+              <FaStar />{" "}
+              {attraction.rating ? attraction.rating.toFixed(1) : "N/A"}
+            </span>
+            <span>{attraction.category}</span>
+          </div>
+          <p className="overview">{attraction.description}</p>
+          <button
+            className="view-map-btn"
+            onClick={() => setIsMapModalOpen(true)}
+          >
+            View on Map
+          </button>
+          {renderRatingInput()}
+        </div>
 
+        {isMapModalOpen && (
+          <div
+            className="map-modal-overlay"
+            onClick={() => setIsMapModalOpen(false)}
+          >
+            <div
+              className="map-modal-content"
+              onClick={(e) => e.stopPropagation()}
+            >
+              <button
+                className="close-modal-btn"
+                onClick={() => setIsMapModalOpen(false)}
+              >
+                &times;
+              </button>
+              <iframe
+                title="Map"
+                src={mapUrl}
+                width="100%"
+                height="100%"
+                style={{ border: 0, borderRadius: "8px" }}
+                allowFullScreen=""
+                loading="lazy"
+                referrerPolicy="no-referrer-when-downgrade"
+              ></iframe>
+            </div>
+          </div>
+        )}
+      </div>
       <div className="page-reviews-section">
         <h2>Reviews for {attraction.name}</h2>
         <div className="add-review-form">
@@ -452,7 +443,16 @@ const AttractionDetail = () => {
           )}
         </div>
       </div>
-    </div>
+      {showRecommendations && recommendations.length > 0 && (
+        <section style={{ marginTop: "3rem" }}>
+          <AttractionsSlider
+            title="You might also like"
+            items={recommendations}
+            userId={userId}
+          />
+        </section>
+      )}
+    </>
   );
 };
 
