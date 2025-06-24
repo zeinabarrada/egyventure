@@ -13,7 +13,7 @@ from sklearn.metrics.pairwise import cosine_similarity
 from surprise import NMF, SVD, Dataset, Reader
 from surprise.model_selection import train_test_split
 import datetime
-from recommendation_models import bert_reviews, cosine_similarity # this isn't an error, keep it as it is
+from recommendation_models import sbert_reviews, cosine_recommend
 
 """ move these lines to the beginning of each view, and close client after use """
 client = MongoClient('mongodb://localhost:27017/')
