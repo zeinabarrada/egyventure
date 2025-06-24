@@ -21,10 +21,11 @@
 }
 
 .section-header h2 {
-  font-size: 2.5rem;
-  color: #030303;
-  font-weight: 700;
-  margin: 0;
+  font-size: 2.8rem;
+  font-weight: 900;
+  letter-spacing: -1px;
+  color: #181818;
+  margin-bottom: 0.5rem;
   flex: 1;
 }
 
@@ -70,6 +71,130 @@
 .recommendation-card:hover {
   transform: translateY(-5px);
   box-shadow: 0 15px 35px rgba(0, 0, 0, 0.1);
+}
+
+/* Overlay Card Design Fix */
+.overlay-card {
+  position: relative;
+  height: 100%;
+  min-height: 380px;
+  max-height: 460px;
+  cursor: pointer;
+  display: block;
+  background: none;
+  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.05);
+}
+
+.overlay-media {
+  position: relative;
+  width: 100%;
+  height: 100%;
+  min-height: 380px;
+  max-height: 460px;
+  overflow: hidden;
+  display: block;
+}
+
+.overlay-media img {
+  width: 100%;
+  height: 100%;
+  min-height: 380px;
+  max-height: 460px;
+  object-fit: cover;
+  display: block;
+}
+
+.recommendation-card.overlay-card {
+  padding: 0;
+  margin: 0;
+  border-radius: 16px;
+  min-width: 280px;
+  min-height: 380px;
+  max-height: 460px;
+  height: 100%;
+  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.05);
+  background: none;
+  display: block;
+}
+
+/* Remove white space for overlay cards in grid */
+.recommendations-grid .overlay-card {
+  height: 100%;
+  min-height: 380px;
+  max-height: 460px;
+}
+
+/* Responsive adjustments for overlay card */
+@media (max-width: 900px) {
+  .overlay-card,
+  .overlay-media,
+  .recommendation-card.overlay-card {
+    min-height: 220px;
+    max-height: 280px;
+  }
+  .overlay-media img {
+    min-height: 220px;
+    max-height: 280px;
+  }
+}
+@media (max-width: 600px) {
+  .overlay-card,
+  .overlay-media,
+  .recommendation-card.overlay-card {
+    min-height: 160px;
+    max-height: 200px;
+  }
+  .overlay-media img {
+    min-height: 160px;
+    max-height: 200px;
+  }
+}
+
+.overlay-content {
+  position: absolute;
+  bottom: 0;
+  left: 0;
+  right: 0;
+  background: linear-gradient(
+    to top,
+    rgba(0, 0, 0, 0.9) 0%,
+    rgba(0, 0, 0, 0.7) 50%,
+    rgba(0, 0, 0, 0.3) 80%,
+    transparent 100%
+  );
+  color: white;
+  padding: 2rem 1.5rem 1.5rem;
+  text-align: left;
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+}
+
+.overlay-card:hover .overlay-content {
+  transform: translateY(-5px);
+}
+
+.overlay-title {
+  font-size: 2rem;
+  font-weight: 700;
+  margin: 0 0 0.8rem 0;
+  line-height: 1.2;
+  text-shadow: 0 2px 4px rgba(0, 0, 0, 0.3);
+  text-align: left;
+}
+
+.overlay-description {
+  font-size: 1.05rem;
+  line-height: 1.5;
+  margin: 0;
+  opacity: 0.95;
+  display: -webkit-box;
+  -webkit-line-clamp: 3;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  text-align: left;
+  width: 100%;
 }
 
 .card-media {
@@ -323,17 +448,54 @@
   .recommendation-card {
     flex: 0 0 calc(33.33% - 1rem);
   }
+
+  .overlay-card {
+    height: 350px;
+  }
+
+  .overlay-title {
+    font-size: 1.6rem;
+  }
 }
 
 @media (max-width: 900px) {
   .recommendation-card {
     flex: 0 0 calc(50% - 0.75rem);
   }
+
+  .overlay-card {
+    height: 320px;
+  }
+
+  .overlay-title {
+    font-size: 1.4rem;
+  }
+
+  .overlay-description {
+    font-size: 0.95rem;
+  }
 }
 
 @media (max-width: 600px) {
   .recommendation-card {
     flex: 0 0 100%;
+  }
+
+  .overlay-card {
+    height: 280px;
+  }
+
+  .overlay-title {
+    font-size: 1.3rem;
+  }
+
+  .overlay-description {
+    font-size: 0.9rem;
+    -webkit-line-clamp: 2;
+  }
+
+  .overlay-content {
+    padding: 1.5rem 1rem 1rem;
   }
 
   .slider-arrow {
