@@ -3,73 +3,13 @@ import "./ChooseInterests.css";
 import axios from "axios";
 import { useAuth } from "../components/Registration/AuthContext";
 import { useNavigate } from "react-router-dom";
+import interestsList from "./Registration/interestsList";
 
 export default function ChooseInterests() {
   const { user } = useAuth(); // Get user from AuthContext
   const userId = user?.id;
   console.log(userId);
   const navigate = useNavigate();
-  const interestsList = [
-    "adrenaline & extreme",
-    "atv & off-road",
-    "balloon rides",
-    "ski & snow",
-
-    "kayaking & canoeing",
-    "safaris",
-    "hiking & camping",
-
-    "ancient ruins",
-
-    "monuments & statues",
-    "museums",
-    "points of interest & landmarks",
-    "sacred & religious sites",
-    "sights & landmarks",
-
-    "historic sites",
-    "historical & heritage",
-    "history museums",
-    "cemeteries",
-    "churches & cathedrals",
-
-    "art galleries",
-    "art museums",
-    "cultural",
-    "libraries",
-
-    "nightlife",
-    "spas & wellness",
-
-    "farmers markets",
-    "flea & street markets",
-    "gift & specialty shops",
-    "antique stores",
-    "shopping",
-
-    "nature & parks",
-    "nature & wildlife",
-    "zoos & aquariums",
-    "mountains",
-    "deserts",
-
-    "archaeology",
-
-    "submarine",
-    "surfing",
-    "swim with dolphins",
-    "theme parks",
-    "scuba & snorkeling",
-    "shark diving",
-    "water & amusement parks",
-
-    "water sports",
-    "waterskiing & jet skiing",
-    "beaches",
-    "boat  & water sports",
-    "bodies of water",
-    "windsurfing & kitesurfing",
-  ];
 
   const [selectedInterests, setSelectedInterests] = useState([]);
 

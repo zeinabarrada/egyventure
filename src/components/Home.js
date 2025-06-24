@@ -57,9 +57,9 @@ export default function Home() {
 
     const fetchCityAttractions = async () => {
       try {
-        const response = await axios.get(
-          `http://127.0.0.1:8000/attractions/city/${activeCity}/`
-        );
+        const response = await axios.get("http://127.0.0.1:8000/filter_city/", {
+          params: { city: activeCity },
+        });
         setCityAttractions(response.data.attractions || []);
       } catch (error) {
         console.error(`Error fetching attractions for ${activeCity}:`, error);

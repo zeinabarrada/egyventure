@@ -146,6 +146,15 @@ export default function Navigation() {
             <button
               className="dropdown-item"
               onClick={() => {
+                navigate("/profile");
+                setIsDropdownOpen(false);
+              }}
+            >
+              Profile
+            </button>
+            <button
+              className="dropdown-item"
+              onClick={() => {
                 navigate("/likes");
                 setIsDropdownOpen(false);
               }}
