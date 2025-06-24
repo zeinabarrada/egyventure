@@ -13,7 +13,7 @@ from sklearn.metrics.pairwise import cosine_similarity
 from surprise import NMF, SVD, Dataset, Reader
 from surprise.model_selection import train_test_split
 import datetime
-from recommendation_models import sbert_reviews, cosine_similarity # this isn't an error, keep it as it is
+from recommendation_models import sbert_reviews, similar_attractions # this isn't an error, keep it as it is
 
 """ move these lines to the beginning of each view, and close client after use """
 client = MongoClient('mongodb://localhost:27017/')
@@ -1132,7 +1132,7 @@ def get_similar_attractions(request):
     if not attracion_id:
         return JsonResponse({'error': 'Attraction ID is required'}, status=400)
 
-    attractions = cosine_similarity.recommend(list(attractions_db.find()), attracion_id)
+    attractions = similar_attractions.recommend(list(attractions_db.find()), attracion_id)
 
     if attractions:
         result_list = []
