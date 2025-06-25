@@ -141,6 +141,7 @@ def get_attractions(request):
         result = []
         for attraction in attractions:
             attraction['id'] = str(attraction.pop('_id'))  # Rename _id to id
+            attraction.setdefault('name', '')  # Ensure name exists
             attraction.setdefault('image', '')  # Ensure image exists
             attraction['description'] = attraction.get('description', '')  # Truncate
             result.append(attraction)
