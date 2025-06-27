@@ -151,7 +151,8 @@ const AttractionsSlider = ({
   if (items.length <= 5) return null;
 
   return (
-    <>
+    <section className="recommendations-section">
+      {title && <h2 className="recommendations-title">{title}</h2>}
       <div className="slider-container">
         {showLeftArrow && (
           <button
@@ -199,7 +200,7 @@ const AttractionsSlider = ({
           </button>
         )}
       </div>
-    </>
+    </section>
   );
 };
 

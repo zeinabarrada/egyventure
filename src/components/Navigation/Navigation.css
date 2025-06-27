@@ -124,6 +124,7 @@
   margin: 0;
   color: #333;
   font-weight: 500;
+  font-size: 1.4rem;
 }
 
 .dropdown-item {
@@ -131,6 +132,7 @@
   padding: 0.5rem 1rem;
   text-align: left;
   background: none;
+  font-size: 1.3rem;
   border: none;
   color: #333;
   cursor: pointer;
@@ -169,11 +171,13 @@
   top: 100%;
   left: 0;
   min-width: 220px;
+  max-height: 350px;
+  overflow-y: auto;
   background: #fff;
-  border-radius: 16px;
-  box-shadow: 0 8px 32px rgba(0, 0, 0, 0.13);
-  padding: 0.5rem 0;
-  z-index: 100;
+  border-radius: 14px;
+  box-shadow: 0 8px 32px rgba(30, 41, 59, 0.13);
+  padding: 0.7rem 0;
+  z-index: 1000;
   margin-top: 0.5rem;
   border: 1px solid #e0e0e0;
   animation: fadeInDropdown 0.2s;
@@ -191,24 +195,23 @@
 }
 
 .city-dropdown-item {
-  padding: 1rem 1.5rem;
-  font-size: 1.08rem;
-  color: #222;
-  background: none;
-  border: none;
-  text-align: left;
-  width: 100%;
   display: block;
-  cursor: pointer;
+  padding: 0.7rem 1.5rem;
+  color: #1a365d;
+  font-size: 1.08rem;
+  text-decoration: none !important;
+  border: none;
+  background: none;
   transition: background 0.18s, color 0.18s;
+  cursor: pointer;
   border-radius: 8px;
   font-weight: 500;
 }
 
 .city-dropdown-item:hover,
 .city-dropdown-item:focus {
-  background: #f5f7fa;
-  color: #007bff;
+  background: #f1f5fa;
+  color: #274472;
   outline: none;
 }
 

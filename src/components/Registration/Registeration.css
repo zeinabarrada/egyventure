@@ -35,15 +35,15 @@
 }
 
 .form-title {
-  font-size: 22px;
+  font-size: 2.8rem;
   color: #2d3748;
-  margin-bottom: 5px;
+  margin-bottom: -5rem;
   font-weight: 700;
 }
 
 .form-subtitle {
   color: #718096;
-  font-size: 13px;
+  font-size: 2rem;
   margin-bottom: 20px;
 }
 
@@ -81,7 +81,7 @@ select {
   padding: 12px 12px 12px 36px;
   border: 1px solid #e2e8f0;
   border-radius: 6px;
-  font-size: 13px;
+  font-size: 1.3rem !important;
   transition: all 0.2s ease;
   background-color: #f8fafc;
 }
@@ -134,7 +134,7 @@ select:focus {
   text-align: center;
   margin-top: 15px;
   color: #718096;
-  font-size: 13px;
+  font-size: 1.3rem;
 }
 
 .form-footer a {
@@ -410,7 +410,9 @@ select:focus {
 .save-btn-modern:hover:not(:disabled) {
   background: linear-gradient(90deg, #1a365d 80%, #e3b04b 100%);
 }
-
+.category-tab-btn {
+  font-size: 1.1rem !important;
+}
 .success-msg,
 .error-msg {
   margin-left: 2.5rem;
@@ -453,4 +455,21 @@ select:focus {
   .profile-section-modern {
     padding: 1rem 0 0.5rem 0;
   }
+}
+
+.edit-interests-section {
+  background: #fff;
+  border-radius: 16px;
+  box-shadow: 0 2px 12px rgba(30, 41, 59, 0.07);
+  padding: 2rem 2.5rem 2.5rem 2.5rem;
+  margin: 2.5rem auto 0 auto;
+  max-width: 900px;
+}
+
+.edit-interests-section h2 {
+  font-size: 1.7rem;
+  font-weight: 800;
+  color: #1a365d;
+  margin-bottom: 1.2rem;
+  text-align: left;
 }

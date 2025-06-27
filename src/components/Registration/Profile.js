@@ -105,7 +105,8 @@ const Profile = () => {
           <span className="profile-email">{account.email}</span>
         </div>
       </div>
-      <div className="profile-interests-modern">
+      <div className="edit-interests-section">
+        <h2>Edit Your Interests</h2>
         <div
           className="category-tabs"
           style={{
@@ -129,7 +130,6 @@ const Profile = () => {
                 borderRadius: "999px",
                 padding: "0.6rem 1.5rem",
                 fontWeight: 600,
-                fontSize: "1rem",
                 cursor: "pointer",
                 transition: "background 0.2s, color 0.2s",
               }}
@@ -156,16 +156,16 @@ const Profile = () => {
             </span>
           ))}
         </div>
+        <button
+          className="save-btn-modern"
+          onClick={handleSave}
+          disabled={saving}
+        >
+          {saving ? "Saving..." : "Save Interests"}
+        </button>
+        {success && <div className="success-msg">{success}</div>}
+        {error && <div className="error-msg">{error}</div>}
       </div>
-      <button
-        className="save-btn-modern"
-        onClick={handleSave}
-        disabled={saving}
-      >
-        {saving ? "Saving..." : "Save Interests"}
-      </button>
-      {success && <div className="success-msg">{success}</div>}
-      {error && <div className="error-msg">{error}</div>}
     </section>
   );
 };

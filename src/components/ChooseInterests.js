@@ -50,7 +50,7 @@ export default function ChooseInterests() {
   );
 
   return (
-    <div>
+    <div className="choose-interests-main-container">
       <div className="heading-container">
         <h2>Tell us what you're interested in</h2>
         <p>Select all that apply</p>
@@ -101,7 +101,9 @@ export default function ChooseInterests() {
         {activeCategoryObj.interests.map((interest) => (
           <button
             key={interest}
-            className={selectedInterests.includes(interest) ? "selected" : ""}
+            className={`interest-btn${
+              selectedInterests.includes(interest) ? " selected" : ""
+            }`}
             onClick={() => toggleInterest(interest)}
           >
             {interest}
